@@ -1,0 +1,27 @@
+# ninja log v6
+34	1710	7685168155273286	CMakeFiles/charles_project.dir/Project_ALL/src/my_functions/panels.cpp.obj	bba5dfe7723c86e0
+38	1220	7685169553276543	CMakeFiles/charles_project.dir/Project_ALL/src/main.cpp.obj	b444a65ee7fd49bb
+22	433	7685171656445674	build.ninja	d38fa74439c820d4
+12	5651	7685168155058947	CMakeFiles/charles_project.dir/Project_ALL/src/my_functions/exporttopdf.cpp.obj	5efc0baf9652b01
+53	8528	7685169553426450	CMakeFiles/charles_project.dir/Project_ALL/src/my_functions/donation_management.cpp.obj	7a4232e44f4496cc
+47	8975	7685169553366628	CMakeFiles/charles_project.dir/Project_ALL/src/my_functions/charity_management.cpp.obj	fe195c6fad24f908
+354	1638	7685173836859759	CMakeFiles/charles_project.dir/Project_ALL/src/MY_hashingthingys/bcrypt.cpp.obj	b8e349a7e3719171
+34	1777	7685173833658383	CMakeFiles/charles_project.dir/Project_ALL/src/my_functions/panels.cpp.obj	d73cc0c6c76b6ff4
+43	1887	7685173833750126	CMakeFiles/charles_project.dir/Project_ALL/src/my_functions/utils.cpp.obj	c04cec5873a01144
+29	7296	7685173833607424	CMakeFiles/charles_project.dir/Project_ALL/src/my_functions/donation_management.cpp.obj	7a4232e44f4496cc
+39	11040	7685173833709193	CMakeFiles/charles_project.dir/Project_ALL/src/my_functions/user_management.cpp.obj	cf2bf503f72f910a
+131	404	7685174167972748	CMakeFiles/charles_project.dir/Project_ALL/src/MY_hashingthingys/blowfish.cpp.obj	d06e9ba1e3d965c3
+26	6189	7685174166926927	CMakeFiles/charles_project.dir/Project_ALL/src/my_functions/exporttopdf.cpp.obj	7e9406092a7a2ff8
+6189	16149	7685174228553240	charles_project.exe	3bbdcf42db7431b3
+20	11772	7685292855217487	CMakeFiles/charles_project.dir/Project_ALL/src/my_functions/charity_management.cpp.obj	fe195c6fad24f908
+13	11262	7685293733414314	CMakeFiles/charles_project.dir/Project_ALL/src/my_functions/charity_management.cpp.obj	fe195c6fad24f908
+11264	27276	7685293845920416	charles_project.exe	3bbdcf42db7431b3
+19	8725	7685296506831035	CMakeFiles/charles_project.dir/Project_ALL/src/my_functions/exporttopdf.cpp.obj	7e9406092a7a2ff8
+8726	28359	7685296593901444	charles_project.exe	3bbdcf42db7431b3
+17	9473	7685302754040494	CMakeFiles/charles_project.dir/Project_ALL/src/my_functions/exporttopdf.cpp.obj	7e9406092a7a2ff8
+9475	27326	7685302848609539	charles_project.exe	3bbdcf42db7431b3
+23	8905	7685303804798699	CMakeFiles/charles_project.dir/Project_ALL/src/my_functions/exporttopdf.cpp.obj	7e9406092a7a2ff8
+8913	26163	7685303893697440	charles_project.exe	3bbdcf42db7431b3
+64	8478	7685315449909189	CMakeFiles/charles_project.dir/Project_ALL/src/my_functions/panels.cpp.obj	d73cc0c6c76b6ff4
+39	13615	7685315449664253	CMakeFiles/charles_project.dir/Project_ALL/src/my_functions/exporttopdf.cpp.obj	7e9406092a7a2ff8
+13615	30268	7685315585410124	charles_project.exe	3bbdcf42db7431b3

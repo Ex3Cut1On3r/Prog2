@@ -1,0 +1,132 @@
+[
+    {
+        "email": "123@gmail.com",
+        "first_name": "charlie",
+        "last_name": "haddad",
+        "number_ofdonations": 0,
+        "password": "$2b$10$4Clo3qnJKVHEqYnAW.KPM.EVT.4.WVRcpA/FqSsGsUeuzDX0GjuUO",
+        "phone": "81917159",
+        "role": "user",
+        "user_id": 0
+    },
+    {
+        "email": "ce0033@lesbg.com",
+        "first_name": "charkie",
+        "last_name": "haddad",
+        "number_ofdonations": 0,
+        "password": "$2b$10$YnzAPz.Yc7DQanm75xRAr.kU86JwT8NPaxnxNqqk66Qid0P9AaltW",
+        "phone": "81917159",
+        "role": "user",
+        "user_id": 1
+    },
+    {
+        "email": "ce0022@lesbg.com",
+        "first_name": "hadi",
+        "last_name": "hassan",
+        "number_ofdonations": 0,
+        "password": "$2b$10$T.CNyxQ3FxnyzVT8DsE4qOL6o1Gw9UbEr2vNdFs6NJWgDHj.1DimO",
+        "phone": "76694225",
+        "role": "admin",
+        "user_id": 2
+    },
+    {
+        "email": "123123@gmail.com",
+        "first_name": "charlie",
+        "last_name": "haddad",
+        "number_ofdonations": 0,
+        "password": "$2b$10$G5dVy.XwqTrYz4PaAs2ltOo3uJhleDz36Q1El9qO8ojgjMekHZK0q",
+        "phone": "81917159",
+        "role": "admin",
+        "user_id": 3
+    },
+    {
+        "email": "sera@gmail.com",
+        "first_name": "sera",
+        "last_name": "kian",
+        "number_ofdonations": 0,
+        "password": "$2b$10$6kwexbiqO1y90rK49tsSwemFfk.B6aWD/Dfoz9wr.bf2aP9pUbCu.",
+        "phone": "81917159",
+        "role": "admin",
+        "user_id": 4
+    },
+    {
+        "email": "cahoidhasi",
+        "first_name": "cahrlie",
+        "last_name": "haddad",
+        "number_ofdonations": 0,
+        "password": "$2b$10$0qHddFKWN1hxd3CpEW2eguvcxZxy4HCuHP0uyBGOfLvbyvhPQbiBO",
+        "phone": "193901231",
+        "role": "user",
+        "user_id": 5
+    },
+    {
+        "email": "ce00333",
+        "first_name": "ce",
+        "last_name": "haddad",
+        "number_ofdonations": 0,
+        "password": "$2b$10$QSdzXToblpBj7MyCYv0EOekoomiws8q/ZfOelYqhkKbpIMbClwWpq",
+        "phone": "81818",
+        "role": "admin",
+        "user_id": 6
+    },
+    {
+        "email": "",
+        "first_name": "",
+        "last_name": "",
+        "number_ofdonations": 0,
+        "password": "$2b$10$BR.fqmA/aRp.dmm/cE8gLOQ840vzbUWjJimEIxCitOhakn5ZKIXdi",
+        "phone": "",
+        "role": "",
+        "user_id": 7
+    },
+    {
+        "email": "asd000",
+        "first_name": "charles",
+        "last_name": "haddad",
+        "number_ofdonations": 0,
+        "password": "$2b$10$H6Ou0.2KkerYrxgXsKRWnuifYfDNvL3h8qDuO3bI86B9/G6ZW4QG6",
+        "phone": "911",
+        "role": "user",
+        "user_id": 8
+    },
+    {
+        "email": "charlie.alhaddad@gmail.com",
+        "first_name": "charles",
+        "last_name": "haddad",
+        "number_ofdonations": 0,
+        "password": "$2b$10$XcAp/k1DPnhJoMGx71NSme6kbnut/21aPTlPweCWA5E0tQStlB.mW",
+        "phone": "81917159",
+        "role": "admin",
+        "user_id": 9
+    },
+    {
+        "email": "ce0022@gmail.com",
+        "first_name": "charles",
+        "last_name": "haddad",
+        "number_ofdonations": 1,
+        "password": "$2b$10$kJ709bgjDUxgtjqjT6/2n.u/O6a5v7kQcgqvDj2xPZ27aqr0/wA62",
+        "phone": "81917159",
+        "role": "user",
+        "user_id": 10
+    },
+    {
+        "email": "jijo@gmail.com",
+        "first_name": "charlie ",
+        "last_name": "haddad",
+        "number_ofdonations": 2,
+        "password": "$2b$10$7dFl8Lmd.duT0q1gxZrNHuSTsbugZGDQlFbNlP9z0u0P8HyIHNQGm",
+        "phone": "81917159",
+        "role": "user",
+        "user_id": 11
+    },
+    {
+        "email": "nigga@gmail.com",
+        "first_name": "nigga",
+        "last_name": "balls69",
+        "number_ofdonations": 1,
+        "password": "$2b$10$d4SCWuPWWvkhbjgPcFp9ue9ZmbSveePkvfvDaUTPr2eN/7xRjFeHK",
+        "phone": "81917159",
+        "role": "user",
+        "user_id": 12
+    }
+]
