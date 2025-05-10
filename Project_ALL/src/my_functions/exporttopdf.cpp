@@ -13,7 +13,8 @@
 #include <map>        // For std::map (to group donations by user)
 #include <algorithm>  // For std::replace (if needed for paths)
 #include <chrono>     // For time formatting
-#include <ctime>      // For time formatting
+#include <ctime>
+// For time formatting
 
 using json = nlohmann::json;
 
@@ -111,22 +112,18 @@ void export_to_html(const std::string& json_file_path, const std::string& html_f
     out << "        line-height: 1.6;\n";
     out << "    }\n";
     out << "    .report-header {\n";
-    out << "        background-color: #2c3e50;\n"; // Dark slate blue
-    out << "        color: #ffffff;\n";
-    out << "        padding: 25px 40px;\n";
+    out << "        background-color: #FFFFFF;\n"; // Header background (white)
+    // out << "        color: #ffffff;\n"; // Text color removed as text is removed
+    out << "        padding: 20px 40px;\n"; // Adjusted padding
     out << "        display: flex;\n";
     out << "        align-items: center;\n";
-    out << "        justify-content: space-between;\n";
+    out << "        justify-content: center;\n"; // Center the logo
     out << "        box-shadow: 0 2px 5px rgba(0,0,0,0.1);\n";
     out << "    }\n";
-    out << "    .report-header h1 {\n";
-    out << "        margin: 0;\n";
-    out << "        font-size: 1.7em;\n";
-    out << "        font-weight: 600;\n";
-    out << "    }\n";
+    // .report-header h1 styles removed
     out << "    .report-header .logo {\n";
-    out << "        max-height: 55px;\n";
-    out << "        width: auto;\n";
+    out << "        max-height: 150px;\n"; // Increased logo height
+    out << "        width: auto;\n";       // Corrected width to maintain aspect ratio
     out << "    }\n";
     out << "    .container {\n";
     out << "        padding: 30px 40px;\n";
@@ -216,9 +213,15 @@ void export_to_html(const std::string& json_file_path, const std::string& html_f
     out << "    }\n";
     // Responsive adjustments
     out << "    @media (max-width: 768px) {\n";
-    out << "        .report-header { flex-direction: column; text-align: center; padding: 20px; }\n";
-    out << "        .report-header h1 { margin-bottom: 15px; font-size: 1.4em; }\n";
-    out << "        .report-header .logo { max-height: 45px; margin-top: 10px; }\n";
+    out << "        .report-header { \n";
+    // out << "           flex-direction: column; text-align: center; \n"; // No longer needed for single centered item
+    out << "           padding: 15px; \n"; // Adjusted padding for mobile
+    out << "        }\n";
+    // .report-header h1 responsive styles removed
+    out << "        .report-header .logo { \n";
+    out << "           max-height: 100px; \n"; // Adjusted logo size for mobile
+    // out << "           margin-top: 10px; \n"; // No longer needed
+    out << "        }\n";
     out << "        .container { padding: 20px 15px; }\n";
     out << "        .report-main-title { font-size: 2em; }\n";
     out << "        .user-section { padding: 20px; }\n";
@@ -229,7 +232,7 @@ void export_to_html(const std::string& json_file_path, const std::string& html_f
     out << "</head>\n<body>\n";
 
     out << "  <div class=\"report-header\">\n";
-    out << "    <h1>Charlie Haddad Programming2 project UA</h1>\n";
+    // out << "    <h1>Charlie Haddad Programming2 project UA</h1>\n"; // Text header removed
     out << "    <img src=\"" << logo_path_for_html << "\" alt=\"University Logo\" class=\"logo\" onerror=\"this.style.display='none'; console.error('Logo not found at " << logo_path_for_html << "')\">\n";
     out << "  </div>\n";
 
@@ -264,14 +267,13 @@ void export_to_html(const std::string& json_file_path, const std::string& html_f
                             oss << std::fixed << std::setprecision(2) << amount_val;
                             amount_str = "$" + oss.str();
                         } else if (item["donation_amount"].is_string()) {
-                             // Attempt to convert string to double for consistent formatting, or use as is
                             try {
                                 double amount_val = std::stod(item["donation_amount"].get<std::string>());
                                 std::ostringstream oss;
                                 oss << std::fixed << std::setprecision(2) << amount_val;
                                 amount_str = "$" + oss.str();
                             } catch (const std::exception&) {
-                                amount_str = item["donation_amount"].get<std::string>(); // Use as is if not a number
+                                amount_str = item["donation_amount"].get<std::string>();
                             }
                         }
                     }

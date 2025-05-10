@@ -128,5 +128,35 @@
         "phone": "81917159",
         "role": "user",
         "user_id": 12
+    },
+    {
+        "email": "Chre@gmail.cim",
+        "first_name": "charles",
+        "last_name": "haddad",
+        "number_ofdonations": 0,
+        "password": "$2b$10$oRubGbA.XyIrW24SlfmHfe6scNj0k4/zC1isNpA5p8tBa4pPCOs7.",
+        "phone": "819171519",
+        "role": "user",
+        "user_id": 13
+    },
+    {
+        "email": "charles@gmail.com",
+        "first_name": "charlie",
+        "last_name": "haddad",
+        "number_ofdonations": 0,
+        "password": "$2b$10$wMZujW3XezKmQ46HklxBE.FscmLL5TsGhjmlr9xelgNAa.L0Jdsiq",
+        "phone": "81917159",
+        "role": "user",
+        "user_id": 14
+    },
+    {
+        "email": "CHre12@gmail.com",
+        "first_name": "charlie",
+        "last_name": "haddad",
+        "number_ofdonations": 0,
+        "password": "$2b$10$YkTKvKUzd.4QgWsChaMfM.U8gvHblgrXUXGRviuMbb0fCpfwl2Vkq",
+        "phone": "81917159",
+        "role": "admin",
+        "user_id": 15
     }
 ]

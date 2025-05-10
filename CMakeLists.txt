@@ -22,6 +22,7 @@ add_executable(charles_project
         Project_ALL/src/my_functions/utils.cpp
         Project_ALL/src/MY_hashingthingys/bcrypt.cpp
         Project_ALL/src/MY_hashingthingys/blowfish.cpp
+        Project_ALL/src/my_functions/logger.cpp
 )
 
 # --- Linker Flags ---

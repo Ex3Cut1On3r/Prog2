@@ -11,7 +11,7 @@
 #include <limits>   // For std::numeric_limits
 #include <fstream>  // For std::ifstream to check HTML file existence (optional check)
 #include <filesystem> // For std::filesystem::create_directories, std::filesystem::exists, std::filesystem::current_path (C++17)
-
+#include "structsandfunctions/log_thingy.h"
 
 // If client, charity, etc., are not fully declared in functions.h,
 // you might need to include their specific header (e.g., "src/structsandfunctions/structures.h")
@@ -49,26 +49,34 @@ void adminPanel(client& admin, charity*& charities, int& charityCount) {
 
         switch (choice) {
             case 1:
-                // addCharity(charities, charityCount);
-                // saveCharities(charities, charityCount);
-                std::cout << "Admin: Add Charity (Placeholder)\n";
+                addCharity(charities, charityCount);
+                saveCharities(charities, charityCount);
+                std::cout << "Console: Added Charity" << "from: " << admin.first_name  << "\n";
+                 LOG_INFO("ADMIN " + admin.email + ": Has added a charity");
+
                 break;
             case 2:
-                // if (charityCount > 0) { modifyCharity(charities, charityCount); saveCharities(charities, charityCount); }
-                // else { std::cout << "No charities to modify.\n"; }
-                std::cout << "Admin: Modify Charity (Placeholder)\n";
+                if (charityCount > 0) { modifyCharity(charities, charityCount); saveCharities(charities, charityCount); }
+                else { std::cout << "No charities to modify.\n"; }
+                std::cout << "Console: Modified Charity"<< "from: " << admin.first_name  << "\n";
+                LOG_INFO("ADMIN " + admin.email + ": Has modified a charity");
+
                 break;
             case 3:
-                // if (charityCount > 0) { removeCharity(charities, charityCount); saveCharities(charities, charityCount); }
-                // else { std::cout << "No charities to remove.\n"; }
-                std::cout << "Admin: Remove Charity (Placeholder)\n";
+                if (charityCount > 0) { removeCharity(charities, charityCount); saveCharities(charities, charityCount); }
+                 else { std::cout << "No charities to remove.\n"; }
+                std::cout << "Console: Removed Charity"<< "from: " << admin.first_name  << "\n";
+            LOG_WARNING("ADMIN " + admin.email + ": Has DELETED a charity!!!!");
+
                 break;
             case 4:
-                // displayCharities(charities, charityCount);
-                std::cout << "Admin: View All Charities (Placeholder)\n";
+                displayCharities(charities, charityCount);
+                std::cout << "Console: Viewing Charities"<< "from: " << admin.first_name  << "\n";
                 break;
             case 0:
                 std::cout << "Logging out from Admin Panel...\n";
+            LOG_WARNING("ADMIN " + admin.email + ": Has Logged out!!!!");
+
                 break;
             default:
                 std::cout << "Invalid option. Try again.\n";
@@ -81,12 +89,7 @@ void userPanel(client& user, charity*& charities, int& charityCount) {
     bool userDataHasChanged = false; // To track if user data needs saving on logout
     do {
         std::cout << "\n--- User Panel (" << user.first_name << " " << user.last_name << ") ---\n";
-        // Example: if client struct has a number_ofdonations member
-        // if (user.donations_list != nullptr) { // Assuming donations_list is a pointer or similar
-        //    std::cout << "Donations made: " << user.number_ofdonations << "\n";
-        // } else {
-        //    std::cout << "Donations made: 0\n";
-        // }
+        std::cout << "Donations made: " << user.number_ofdonations << "\n";
         std::cout << "1. Browse charities\n2. Make donation\n3. View my donations\n";
         std::cout << "4. Cancel donation\n5. Modify donation\n";
         std::cout << "6. Export All Donations to PDF\n";
@@ -102,41 +105,47 @@ void userPanel(client& user, charity*& charities, int& charityCount) {
 
         switch (choice) {
             case 1:
-                // displayCharities(charities, charityCount);
-                std::cout << "User: Browse Charities (Placeholder)\n";
+                displayCharities(charities, charityCount);
+                std::cout << "User: Browse Charities \n";
                 break;
             case 2: {
-                // if (charityCount > 0) {
-                //     bool donationSuccessFlag = false;
-                //     makeDonation(user, charities, charityCount, donationSuccessFlag);
-                //     if (donationSuccessFlag) {
-                //         saveCharities(charities, charityCount); // Or save all data
-                //         userDataHasChanged = true;
-                //     }
-                // } else { std::cout << "No charities to donate to.\n"; }
-                std::cout << "User: Make Donation (Placeholder)\n";
+                if (charityCount > 0) {
+                bool donationSuccessFlag = false;
+                makeDonation(user, charities, charityCount, donationSuccessFlag);
+                if (donationSuccessFlag) {
+                    saveCharities(charities, charityCount); // Or save all data
+                 userDataHasChanged = true;
+                  }
+                 } else { std::cout << "No charities to donate to.\n"; }
+                std::cout << user.first_name << "Has Made A New Donation! (I think?) (I hope so!)\n";
+                LOG_INFO("User " + user.email + ": Has Made a Donation");
+
                 break;
             }
             case 3:
-                // displayUserDonations(user);
-                std::cout << "User: View My Donations (Placeholder)\n";
+                std::cout << user.first_name << "Here are your donations:\n";
+                displayUserDonations(user);
                 break;
             case 4:
-                // cancelDonation(user, charities, charityCount); // Implement this
-                // userDataHasChanged = true; // If a donation is successfully cancelled
-                // saveCharities(charities, charityCount); // Or save all data
-                std::cout << "User: Cancel Donation (Placeholder)\n";
+                cancelDonation(user, charities, charityCount); // Implement this
+                userDataHasChanged = true; // If a donation is successfully cancelled
+                saveCharities(charities, charityCount); // Or save all data
+                std::cout << user.first_name << "Has cancelled a donation :/\n";
+            LOG_WARNING("User " + user.email + ": Has Cncelled a Dnation");
                 break;
             case 5: {
-                // modifyDonation(user, charities, charityCount); // Implement this
-                // userDataHasChanged = true; // If a donation is successfully modified
-                // saveCharities(charities, charityCount); // Or save all data
-                std::cout << "User: Modify Donation (Placeholder)\n";
+                LOG_INFO("User " + user.email + " performing: Modify Donation.");
+                modifyDonation(user, charities, charityCount); // Implement this
+                userDataHasChanged = true; // If a donation is successfully modified
+                saveCharities(charities, charityCount); // Or save all data
+                std::cout << user.first_name << "Has modified a donation (i hope for good :d)\n";
+                LOG_INFO("User " + user.email + ": Donation modified successfully.");
                 break;
             }
             case 6: { // Export to PDF
                 // **1. Define the base path to your Project_ALL directory**
                 //    Update this path if your project is located elsewhere.
+                LOG_INFO("User " + user.email + " performing: Export All Donations to PDF.");
                 std::string project_root_path = "C:/Users/Charlie/Documents/nigga/Programming2_Project-main/Project_ALL/"; // Ensure trailing slash
 
                 // **2. Construct the path to your MY_Pdfs folder**
@@ -147,10 +156,13 @@ void userPanel(client& user, charity*& charities, int& charityCount) {
                     if (!std::filesystem::exists(my_pdfs_dir_path)) {
                         if (std::filesystem::create_directories(my_pdfs_dir_path)) {
                             std::cout << "INFO: Created directory: " << my_pdfs_dir_path << std::endl;
+                            LOG_INFO("Created directory for PDFs: " + my_pdfs_dir_path);
                         } else {
                             // This case might happen if create_directories fails for reasons other than it already existing,
                             // or if another process created it between exists() and create_directories().
                             std::cout << "WARNING: Could not create directory (it might exist or other issue): " << my_pdfs_dir_path << std::endl;
+                            LOG_INFO("Cannot create directory for PDFs: " + my_pdfs_dir_path);
+
                         }
                     }
                 } catch (const std::filesystem::filesystem_error& e) {
@@ -195,33 +207,43 @@ void userPanel(client& user, charity*& charities, int& charityCount) {
                 if (test_html_file.is_open()) {
                     test_html_file.close();
                     std::cout << "INFO: Intermediate HTML file [" << html_output_path << "] created successfully. Attempting PDF conversion." << std::endl;
+                    LOG_INFO("PDF Export: Intermediate HTML file [" + html_output_path + "] created.");
 
                     if (convert_html_to_pdf(html_output_path, pdf_output_path)) {
                         std::cout << "SUCCESS: PDF report exported successfully to [" << pdf_output_path << "]." << std::endl;
+                        LOG_INFO("PDF Export: Successfully created [" + pdf_output_path + "].");
                     } else {
                         std::cout << "ERROR: PDF conversion function reported failure." << std::endl;
+                        LOG_ERR("PDF Export: PDF conversion reported failure for " + html_output_path);
                     }
                 } else {
                     std::cout << "ERROR: Intermediate HTML file [" << html_output_path << "] was NOT created by export_to_html or is not accessible." << std::endl;
+                    LOG_ERR("PDF Export: Intermediate HTML file [" + html_output_path + "] was NOT created or is not accessible.");
                     // Debugging current working directory can be helpful
                     try {
                        std::cout << "DEBUG: Current working directory: " << std::filesystem::current_path() << std::endl;
+                        LOG_DEBUG("Current working directory for PDF export: " + std::filesystem::current_path().string());
                     } catch (const std::filesystem::filesystem_error& e) {
                        std::cerr << "DEBUG: Error getting current path: " << e.what() << std::endl;
+                        LOG_ERR("Error getting current path: " + std::string(e.what()));
                     }
                 }
                 break;
             }
             case 0:
                 std::cout << "Logging out from User Panel...\n";
+            LOG_INFO_CONSOLE("User " + user.email + " has logged out.");
+
                 break;
             default:
                 std::cout << "Invalid option. Try again.\n";
+            LOG_WARNING("User panel: Invalid choice (" + std::to_string(choice) + ") by " + user.email);
         }
     } while (choice != 0);
 
     if (userDataHasChanged) {
-        // saveUserData(user); // Call your function to save any changes to the user's data
-        std::cout << "INFO: User data changes saved (Placeholder for actual saveUserData call).\n";
+        saveUserData(user);
+        std::cout << "Console:" << user.first_name <<"mmodified succesfully" << ".\n";
+        LOG_INFO("User panel exit for " + user.email + ": Ensuring user data is saved (if userDataHasChanged was true).");
     }
 }

@@ -4,8 +4,8 @@
         "current_amount": 1000.0,
         "description": "notsleepy",
         "name": "charles",
-        "status": "closed",
-        "target_amount": 99999.0
+        "status": "Active",
+        "target_amount": 69420.0
     },
     {
         "charity_id": 2,
@@ -14,5 +14,21 @@
         "name": "charlies",
         "status": "Active",
         "target_amount": 1000000000.0
+    },
+    {
+        "charity_id": 3,
+        "current_amount": 2444.0,
+        "description": "we are a charity that has no food :/",
+        "name": "charles",
+        "status": "Active",
+        "target_amount": 19000.0
+    },
+    {
+        "charity_id": 4,
+        "current_amount": 1.0,
+        "description": "haddad",
+        "name": "charles",
+        "status": "Active",
+        "target_amount": 99.0
     }
 ]
