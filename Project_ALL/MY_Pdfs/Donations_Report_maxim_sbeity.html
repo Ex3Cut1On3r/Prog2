@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Donations Report</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    body {
+        font-family: 'Inter', sans-serif;
+        margin: 0;
+        padding: 0;
+        background-color: #f4f7f9;
+        color: #333;
+        line-height: 1.6;
+    }
+    .report-header {
+        background-color: #FFFFFF;
+        padding: 20px 40px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+    .report-header .logo {
+        max-height: 150px;
+        width: auto;
+    }
+    .container {
+        padding: 30px 40px;
+        max-width: 900px;
+        margin: 20px auto;
+    }
+    .report-main-title {
+        text-align: center;
+        color: #34495e;
+        margin-bottom: 40px;
+        font-size: 2.5em;
+        font-weight: 700;
+    }
+    .user-section {
+        margin-bottom: 40px;
+        background-color: #ffffff;
+        border-radius: 8px;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.07);
+        padding: 25px 30px;
+    }
+    .user-section h2 {
+        font-size: 1.8em;
+        color: #2980b9;
+        margin-top: 0;
+        margin-bottom: 25px;
+        padding-bottom: 10px;
+        border-bottom: 2px solid #ecf0f1;
+    }
+    .donation-card {
+        background-color: #fdfdfd;
+        border: 1px solid #e0e6ed;
+        border-radius: 6px;
+        padding: 20px;
+        margin-bottom: 20px;
+    }
+    .donation-card p {
+        margin: 0 0 10px 0;
+        font-size: 0.95em;
+        color: #555;
+    }
+    .donation-card p strong {
+        color: #333;
+        min-width: 120px;
+        display: inline-block;
+        font-weight: 500;
+    }
+    .donation-card p:last-child {
+        margin-bottom: 0;
+    }
+    .no-donations {
+        text-align: center;
+        font-size: 1.1em;
+        color: #7f8c8d;
+        padding: 30px;
+    }
+    .footer {
+        text-align: center;
+        padding: 25px;
+        margin-top: 50px;
+        font-size: 0.9em;
+        color: #888;
+        border-top: 1px solid #e0e6ed;
+    }
+    @media print {
+        body { background-color: #fff; -webkit-print-color-adjust: exact; print-color-adjust: exact;}
+        .report-header { box-shadow: none; }
+        .container { margin: 0 auto; padding: 20px 0; box-shadow: none; }
+        .user-section {
+            page-break-before: always;
+            box-shadow: none;
+            border: 1px solid #ccc;
+            margin: 20px 0;
+        }
+        .user-section:first-of-type {
+            page-break-before: auto;
+        }
+        .donation-card {
+            page-break-inside: avoid;
+            box-shadow: none;
+            border: 1px solid #ddd;
+        }
+        .footer { border-top: 1px solid #ccc; }
+    }
+    @media (max-width: 768px) {
+        .report-header { 
+           padding: 15px; 
+        }
+        .report-header .logo { 
+           max-height: 100px; 
+        }
+        .container { padding: 20px 15px; }
+        .report-main-title { font-size: 2em; }
+        .user-section { padding: 20px; }
+        .user-section h2 { font-size: 1.5em; }
+        .donation-card p strong { min-width: 100px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="report-header">
+    <img src="C:/Users/Charlie/Documents/ProgrammingTwoProject/Programming2_Project-main/Project_ALL/data/unilogo.png" alt="University Logo" class="logo" onerror="this.style.display='none'; console.error('Logo not found at C:/Users/Charlie/Documents/ProgrammingTwoProject/Programming2_Project-main/Project_ALL/data/unilogo.png')">
+  </div>
+  <div class="container">
+    <h1 class="report-main-title">Donation Report</h1>
+    <div class="user-section" style="page-break-before: auto;">
+      <h2>Nada Massoud</h2>
+      <div class="donation-card">
+        <p><strong>Charity:</strong> Lebanese Stage Arts</p>
+        <p><strong>Amount:</strong> $13000.00</p>
+        <p><strong>Date:</strong> 2025-05-11 17:04:09 UTC</p>
+      </div>
+    </div>
+    <div class="user-section">
+      <h2>charles haddad</h2>
+      <div class="donation-card">
+        <p><strong>Charity:</strong> charlies</p>
+        <p><strong>Amount:</strong> $89172.00</p>
+        <p><strong>Date:</strong> 2025-05-09 12:35:05 UTC</p>
+      </div>
+    </div>
+    <div class="user-section">
+      <h2>charlie  haddad</h2>
+      <div class="donation-card">
+        <p><strong>Charity:</strong> charlies</p>
+        <p><strong>Amount:</strong> $111.00</p>
+        <p><strong>Date:</strong> 2025-05-09 12:51:44 UTC</p>
+      </div>
+      <div class="donation-card">
+        <p><strong>Charity:</strong> charlies</p>
+        <p><strong>Amount:</strong> $1.00</p>
+        <p><strong>Date:</strong> 2025-05-09 13:08:30 UTC</p>
+      </div>
+      <div class="donation-card">
+        <p><strong>Charity:</strong> charlies</p>
+        <p><strong>Amount:</strong> $69.00</p>
+        <p><strong>Date:</strong> 2025-05-09 13:09:41 UTC</p>
+      </div>
+      <div class="donation-card">
+        <p><strong>Charity:</strong> Lebanese Stage Arts</p>
+        <p><strong>Amount:</strong> $1.00</p>
+        <p><strong>Date:</strong> 2025-05-11 15:18:18 UTC</p>
+      </div>
+    </div>
+    <div class="user-section">
+      <h2>nigga balls69</h2>
+      <div class="donation-card">
+        <p><strong>Charity:</strong> charlies</p>
+        <p><strong>Amount:</strong> $999.00</p>
+        <p><strong>Date:</strong> 2025-05-09 13:01:38 UTC</p>
+      </div>
+    </div>
+  </div>
+  <div class="footer">
+    <p>Report Generated on: 2025-05-11 21:32:42 Middle East Daylight Time</p>
+    <p>© 2025 Charlie Haddad - UA. All rights reserved.</p>
+  </div>
+</body>
+</html>
