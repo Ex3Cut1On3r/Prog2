@@ -1,378 +1,334 @@
-#include "structsandfunctions/functions.h" // Includes all necessary declarations from your central header
+#include "structsandfunctions/functions.h"
 #include "nlohman/json.hpp"
 #include <iostream>
 #include <fstream>
-#include <iomanip>    // For setw, fixed, setprecision
-#include <limits>     // For numeric_limits
-#include <string>     // For std::string operations
-#include <ctime>      // For time(0)
-// No <vector> needed for this version as we are manually managing JSON array iteration
+#include <iomanip>
+#include <limits>
+#include <string>
+#include <vector>
+#include <ctime>
 
-using namespace std;
+using std::cout;
+using std::cerr;
+using std::endl;
+using std::string;
+using std::left;
+using std::right;
+using std::setw;
+using std::fixed;
+using std::setprecision;
+using std::ifstream;
+using std::ofstream;
+using std::cin;
+using std::getline;
+using std::numeric_limits;
+using std::streamsize;
+using std::to_string;
 using json = nlohmann::json;
 
-// Forward declaration for the helper if it's defined later in this file
-void writeAllDonationsToFile(const json& donationsArray);
+// extern datee getCurrentDateTime(); // Ensure this is available
 
-void writeDonationToFile(const client& user, const charity& charityDetails, double donationAmount, time_t donationTimestamp) {
-    string filePath = "../Project_ALL/data/donations.json";
-    json donationsArray = json::array();
-
-    ifstream inFile(filePath);
-    if (inFile.is_open()) {
-        try {
-            inFile >> donationsArray;
-            if (!donationsArray.is_array()) {
-                cerr << "⚠️ " << filePath << " does not contain a JSON array. Initializing as empty." << endl;
-                donationsArray = json::array();
-            }
-        } catch (json::parse_error& e) {
-            cerr << "⚠️ Error parsing " << filePath << ": " << e.what()
-                 << ". Initializing as empty." << endl;
-            donationsArray = json::array();
-        }
-        inFile.close();
-    } else {
-        cout << "[Info] " << filePath << " not found. A new file will be created." << endl;
-    }
-
-    json newDonationEntry;
-    newDonationEntry["user_id"] = user.user_id;
-    newDonationEntry["user_name"] = user.first_name + " " + user.last_name;
-    newDonationEntry["charity_id"] = charityDetails.charity_id;
-    newDonationEntry["charity_name"] = charityDetails.name;
-    newDonationEntry["donation_amount"] = donationAmount;
-    newDonationEntry["donation_timestamp"] = donationTimestamp;
-
-    donationsArray.push_back(newDonationEntry);
-    writeAllDonationsToFile(donationsArray);
-}
-
-void makeDonation(client& user, charity*& charities, int& charityCount, bool& donationMadeSuccessfully) {
-    donationMadeSuccessfully = false;
+void makeDonation(client& user, charity*& charities, int charityCount, bool& successFlag) {
+    successFlag = false;
     if (charityCount == 0) {
-        cout << "No charities available to donate to.\n";
+        cout << "No charities available to donate to." << endl;
         return;
     }
-    int charityID; double donationAmount;
-    cout << "\nEnter charity ID to donate to: ";
-    while (!(cin >> charityID) || charityID <= 0) {
-        cout << "Invalid input. Please enter a positive charity ID: ";
-        cin.clear(); cin.ignore(numeric_limits<streamsize>::max(), '\n');
+    displayCharities(charities, charityCount);
+    int charityIdChoice;
+    cout << "Enter the ID of the charity you want to donate to (0 to cancel): ";
+    while (!(cin >> charityIdChoice) || charityIdChoice < 0 ) {
+        cout << "Invalid input. Please enter a non-negative charity ID (0 to cancel): ";
+        cin.clear();
+        cin.ignore(numeric_limits<streamsize>::max(), '\n');
     }
-    bool found = false;
+    cin.ignore(numeric_limits<streamsize>::max(), '\n');
+    if (charityIdChoice == 0) {
+        cout << "Donation cancelled." << endl;
+        return;
+    }
     int charityIndex = -1;
-    for (int i = 0; i < charityCount; ++i) {
-        if (charities[i].charity_id == charityID) {
-            found = true;
-            charityIndex = i;
-            break;
+    for (int i = 0; i < charityCount; ++i) { if (charities[i].charity_id == charityIdChoice) { charityIndex = i; break; }}
+    if (charityIndex == -1) {
+        cout << "Invalid charity ID." << endl;
+        return;
+    }
+    if (!charities[charityIndex].status) {
+        cout << "This charity ('" << charities[charityIndex].name
+             << "') is currently CLOSED for donations. Thank you for your interest!" << endl;
+        return;
+    }
+    float donationAmount;
+    float amount_left_to_target = 0.0f;
+    bool hasFiniteTarget = (charities[charityIndex].target_amount > 0.0f);
+    if (hasFiniteTarget) {
+        amount_left_to_target = charities[charityIndex].target_amount - charities[charityIndex].current_amount;
+        if (amount_left_to_target <= 0.0f) {
+            if (charities[charityIndex].status) {
+                charities[charityIndex].status = false;
+            }
+            cout << "This charity ('" << charities[charityIndex].name
+                 << "') has just reached its target and is now CLOSED. Thank you for your interest!" << endl;
+            return;
         }
     }
-
-    if (!found) {
-        cout << "❌ Charity with ID " << charityID << " not found.\n";
-        return;
-    }
-
-    cout << "Donating to: " << charities[charityIndex].name << " (Current: $" << fixed << setprecision(2) << charities[charityIndex].current_amount
-         << ", Target: $" << fixed << setprecision(2) << charities[charityIndex].target_amount << ")\n";
-    if (charities[charityIndex].status != "Active") {
-        cout << "Sorry, charity '" << charities[charityIndex].name << "' is not Active (Status: "
-             << charities[charityIndex].status << ").\n";
-        return;
+    cout << "Donating to: " << charities[charityIndex].name << endl;
+    cout << "Target Amount: $" << fixed << setprecision(2) << charities[charityIndex].target_amount << endl;
+    cout << "Currently Raised: $" << fixed << setprecision(2) << charities[charityIndex].current_amount << endl;
+    if (hasFiniteTarget) {
+        cout << "Amount needed to reach target: $" << fixed << setprecision(2) << amount_left_to_target << endl;
     }
     while (true) {
-        cout << "Enter donation amount: $";
-        if (!(cin >> donationAmount)) {
-            cout << "Invalid input. Numeric amount required.\n";
-            cin.clear(); cin.ignore(numeric_limits<streamsize>::max(), '\n'); continue;
-        }
+        cout << "Enter donation amount: $"; string inputAmountStr; getline(cin, inputAmountStr);
+        if (inputAmountStr.empty()){ cout << "No amount entered. Please enter a numeric amount." << endl; continue; }
+        try { donationAmount = stof(inputAmountStr); }
+        catch (const std::invalid_argument&) { cout << "Invalid input. Numeric amount required. Please try again." << endl; continue; }
+        catch (const std::out_of_range& ) { cout << "Amount out of range. Please try again." << endl; continue; }
         if (donationAmount <= 0) {
-            cout << "Donation amount must be positive.\n";
-            cin.clear(); cin.ignore(numeric_limits<streamsize>::max(), '\n');
+            cout << "Donation amount must be positive. Please try again." << endl;
+        } else if (hasFiniteTarget && donationAmount > amount_left_to_target) {
+            cout << "Your donation of $" << fixed << setprecision(2) << donationAmount
+                 << " exceeds the remaining amount needed ($" << fixed << setprecision(2) << amount_left_to_target << ")." << endl;
+            cout << "Please enter an amount up to $" << fixed << setprecision(2) << amount_left_to_target << "." << endl;
         } else {
-            charities[charityIndex].current_amount += donationAmount;
-            user.number_ofdonations++;
-            cout << "✅ Thank you for your $" << fixed << setprecision(2) << donationAmount
-                 << " donation to " << charities[charityIndex].name << "!\n";
-            cout << charities[charityIndex].name << " new current amount: $" << fixed << setprecision(2) << charities[charityIndex].current_amount << endl;
-            donationMadeSuccessfully = true;
-
-            time_t current_time = time(0);
-            writeDonationToFile(user, charities[charityIndex], donationAmount, current_time);
             break;
         }
     }
+    donationn newDonation;
+    newDonation.donation_id = "D" + to_string(time(0)) + "_" + to_string(user.user_id) + "_" + to_string(user.number_ofdonations);
+    newDonation.charity_id = charities[charityIndex].charity_id;
+    newDonation.amount = donationAmount;
+    newDonation.d = getCurrentDateTime();
+    cout << "Optional: Enter a message for your donation (press Enter for no message): ";
+    getline(cin, newDonation.message);
+    int new_num_donations = user.number_ofdonations + 1;
+    donationn* temp_donations = new (std::nothrow) donationn[new_num_donations];
+    if (temp_donations == nullptr) {
+        cerr << "❌ Memory allocation failed for storing donation. Donation not processed." << endl;
+        return;
+    }
+    for (int i = 0; i < user.number_ofdonations; ++i) {
+        temp_donations[i] = user.donations[i];
+    }
+    temp_donations[user.number_ofdonations] = newDonation;
+    if (user.donations != nullptr) {
+        delete[] user.donations;
+    }
+    user.donations = temp_donations;
+    charities[charityIndex].current_amount += donationAmount;
+    charities[charityIndex].d = getCurrentDateTime();
+    user.number_ofdonations++;
+    cout << "✅ Thank you, " << user.first_name << "! Your donation of $" << fixed << setprecision(2) << donationAmount
+         << " to '" << charities[charityIndex].name << "' has been processed." << endl;
+    if (hasFiniteTarget && charities[charityIndex].current_amount >= charities[charityIndex].target_amount) {
+        if (charities[charityIndex].status) {
+            charities[charityIndex].status = false;
+            cout << "---FUNDRAISING GOAL REACHED - CHARITY CLOSED---" << endl;
+            cout << "Congratulations! '" << charities[charityIndex].name
+                 << "' has now reached its fundraising target and is CLOSED for further donations." << endl;
+        }
+    }
+    successFlag = true;
 }
 
-void displayUserDonations(const client& user) {
-    if (user.number_ofdonations == 0) {
+void displayUserDonations(const client& user, const charity* allCharities, int totalCharityCount) {
+    if (user.number_ofdonations == 0 || user.donations == nullptr) {
         cout << "\nYou have not made any donations yet.\n";
         return;
     }
-
-    cout << "\n--- Your Donations Summary ---\n";
-    cout << "Total individual donations made: " << user.number_ofdonations << endl;
-
-    string filePath = "../Project_ALL/data/donations.json";
-    ifstream inFile(filePath);
-    json donationsArray;
-
-    if(inFile.is_open()){
-        try {
-            inFile >> donationsArray;
-            if(donationsArray.is_array() && !donationsArray.empty()){
-                cout << "--- Your Donation History (Raw Timestamps) ---" << endl;
-                bool foundDonationsForUser = false;
-                int displayIndex = 1;
-
-                const int num_width = 5;
-                const int charity_name_width = 25;
-                const int amount_width = 15;
-                const int timestamp_width = 20; // Assuming timestamp is just a number
-
-                cout << left << setw(num_width) << "No."
-                        << setw(charity_name_width) << "Charity Name"
-                        << right << setw(amount_width) << "Amount ($)"
-                        << "  " << left << setw(timestamp_width) << "Timestamp" << endl;
-                cout << string(num_width + charity_name_width + amount_width + timestamp_width + 6, '-') << endl; // Adjusted line width
-
-                for(const auto& donation : donationsArray){
-                    if(donation.value("user_id", -1) == user.user_id){
-                        if(!foundDonationsForUser) {
-                            foundDonationsForUser = true;
-                        }
-                        string charityName = donation.value("charity_name", "N/A");
-                        if (charityName.length() >= charity_name_width) {
-                            charityName = charityName.substr(0, charity_name_width - 1) + "…";
-                        }
-
-                        cout << left << setw(num_width) << displayIndex++
-                                << setw(charity_name_width) << charityName
-                                << right << setw(amount_width) << fixed << setprecision(2) << donation.value("donation_amount", 0.0)
-                                << "  " << left << setw(timestamp_width) << donation.value("donation_timestamp", (long long)0) << endl;
-                    }
-                }
-                if(foundDonationsForUser) {
-                        cout << string(num_width + charity_name_width + amount_width + timestamp_width + 6, '-') << endl;
-                } else {
-                    cout << "No detailed donation records found for you in donations.json (though count is > 0)." << endl;
-                }
-            } else if (donationsArray.is_array() && donationsArray.empty() && user.number_ofdonations > 0) {
-                cout << "donations.json is empty, but your donation count is " << user.number_ofdonations
-                     << ". Records might be missing or system is out of sync." << endl;
-            } else {
-                 cout << "No donation records in donations.json." << endl;
+    cout << "\n--- Your Donation History ---" << endl;
+    cout << left << setw(5) << "No."
+         << setw(10) << "Don. ID"
+         << setw(25) << "Charity Name"
+         << right << setw(15) << "Amount ($)"
+         << "  " << left << setw(12) << "Date"
+         << setw(10) << "Time"
+         << "  Message" << endl;
+    cout << string(90, '-') << endl;
+    for (int i = 0; i < user.number_ofdonations; ++i) {
+        const donationn& d = user.donations[i];
+        string charityName = "Unknown/Deleted";
+        for(int j=0; j < totalCharityCount; ++j) {
+            if (allCharities[j].charity_id == d.charity_id) {
+                charityName = allCharities[j].name;
+                break;
             }
-        } catch (json::parse_error& e) {
-            cerr << "⚠️ Error parsing donations.json for display: " << e.what() << endl;
         }
-        inFile.close();
-    } else {
-        cout << "Could not open donations.json to display history." << endl;
+        if (charityName.length() >= 25) {
+            charityName = charityName.substr(0, 22) + "...";
+        }
+        cout << left << setw(5) << (i + 1)
+             << setw(10) << d.donation_id.substr(0,9)
+             << setw(25) << charityName
+             << right << setw(15) << fixed << setprecision(2) << d.amount
+             << "  " << left << setw(12) << d.d.date
+             << setw(10) << d.d.time;
+        if (!d.message.empty()) {
+            cout << "  Msg: " << (d.message.length() > 20 ? d.message.substr(0, 17) + "..." : d.message);
+        }
+        cout << endl;
     }
+    cout << string(90, '-') << endl;
 }
 
-
-void modifyDonation(client& user, charity*& charities, int& charityCount) {
-    if (user.number_ofdonations == 0) {
+void modifyDonation(client& user, charity*& charities, int charityCount, const charity* allCharities, int totalCharityCount) {
+    if (user.number_ofdonations == 0 || user.donations == nullptr) {
         cout << "You have no donations to modify.\n";
         return;
     }
-
-    displayUserDonations(user);
-    if (user.number_ofdonations == 0) return; // In case displayUserDonations showed no records for this user from file
-
-    cout << "Enter the No. of the donation you wish to modify (from the list above): ";
+    displayUserDonations(user, allCharities, totalCharityCount);
+    if (user.number_ofdonations == 0) return;
+    cout << "Enter the No. of the donation you wish to modify (from the list above, 0 to cancel): ";
     int selection_num;
-    while (!(cin >> selection_num) || selection_num <= 0) {
-        cout << "Invalid input. Please enter a valid number from the list: ";
+    while (!(cin >> selection_num) || selection_num < 0 || selection_num > user.number_ofdonations) {
+        cout << "Invalid input. Please enter a valid number from the list (1 to "
+             << user.number_ofdonations << ") or 0 to cancel: ";
         cin.clear();
         cin.ignore(numeric_limits<streamsize>::max(), '\n');
     }
-
-    string filePath = "../Project_ALL/data/donations.json";
-    json donationsArray;
-    ifstream inFile(filePath);
-    if (!inFile.is_open()) {
-        cerr << "❌ Could not open donations.json to modify donation.\n";
+    cin.ignore(numeric_limits<streamsize>::max(), '\n');
+    if (selection_num == 0) {
+        cout << "Modification cancelled." << endl;
         return;
     }
-    try {
-        inFile >> donationsArray;
-        if (!donationsArray.is_array()) {
-            cerr << "❌ donations.json is not a valid array. Cannot modify donation.\n";
-            inFile.close();
-            return;
-        }
-    } catch (json::parse_error& e) {
-        cerr << "❌ Error parsing donations.json: " << e.what() << endl;
-        inFile.close();
-        return;
-    }
-    inFile.close();
-
-    int currentUserDonationIndex = 0;
-    int targetDonationJsonIndex = -1;
-
-    for (int i = 0; i < donationsArray.size(); ++i) {
-        const auto& donation = donationsArray[i];
-        if (donation.value("user_id", -1) == user.user_id) {
-            currentUserDonationIndex++;
-            if (currentUserDonationIndex == selection_num) {
-                targetDonationJsonIndex = i;
-                break;
-            }
-        }
-    }
-
-    if (targetDonationJsonIndex == -1) {
-        cout << "❌ Donation selection No. " << selection_num << " not found for your account.\n";
-        return;
-    }
-
-    json& donationToModify = donationsArray[targetDonationJsonIndex];
-    double oldAmount = donationToModify.value("donation_amount", 0.0);
-    int    charityIdOfDonation = donationToModify.value("charity_id", -1);
-    string charityNameOfDonation = donationToModify.value("charity_name", "Unknown");
-
-    cout << "Modifying your donation of $" << fixed << setprecision(2) << oldAmount
-         << " to '" << charityNameOfDonation << "'." << endl;
-
-    double newDonationAmount;
-    cout << "Enter new donation amount: $";
-    while (!(cin >> newDonationAmount) || newDonationAmount <= 0) {
-        cout << "Invalid input. Please enter a positive number: ";
-        cin.clear();
-        cin.ignore(numeric_limits<streamsize>::max(), '\n');
-    }
-
-    double amountDifference = newDonationAmount - oldAmount;
-
-    donationToModify["donation_amount"] = newDonationAmount;
-    donationToModify["modified_timestamp"] = time(0); // Add a modification timestamp
-
-    writeAllDonationsToFile(donationsArray);
-
-    bool charityInMemoryFound = false;
-    for (int i = 0; i < charityCount; ++i) {
-        if (charities[i].charity_id == charityIdOfDonation) {
-            charities[i].current_amount += amountDifference;
-            cout << "✅ Charity '" << charities[i].name << "' current amount updated to $"
-                 << fixed << setprecision(2) << charities[i].current_amount << endl;
-            charityInMemoryFound = true;
+    int donationIndexToModify = selection_num - 1;
+    donationn& donationToModify = user.donations[donationIndexToModify];
+    float oldAmount = donationToModify.amount;
+    int charityIdOfDonation = donationToModify.charity_id;
+    string charityNameOfDonation = "Unknown";
+     for(int j=0; j < charityCount; ++j) {
+        if (charities[j].charity_id == charityIdOfDonation) {
+            charityNameOfDonation = charities[j].name;
             break;
         }
     }
-    if (!charityInMemoryFound && charityIdOfDonation != -1) {
-        cerr << "⚠️ Could not find charity with ID " << charityIdOfDonation
-             << " in memory to update its amount. donations.json is updated, but charities array might be stale." << endl;
+    cout << "Modifying your donation No. " << selection_num << " of $" << fixed << setprecision(2) << oldAmount
+         << " to '" << charityNameOfDonation << "' (Donation ID: " << donationToModify.donation_id << ")." << endl;
+    float newDonationAmount;
+    float amount_left_to_target = -1.0f;
+    int originalCharityIndex = -1;
+    bool charity_has_target_limit = false;
+    for (int i = 0; i < charityCount; ++i) {
+        if (charities[i].charity_id == charityIdOfDonation) {
+            originalCharityIndex = i;
+            if (charities[i].target_amount > 0.0f) {
+                charity_has_target_limit = true;
+                if (charities[i].status) { // Active
+                    amount_left_to_target = (charities[i].target_amount - charities[i].current_amount) + oldAmount;
+                    cout << "Charity '" << charities[i].name << "' currently needs $" << fixed << setprecision(2)
+                         << (charities[i].target_amount - charities[i].current_amount)
+                         << " to reach its target. Max new amount for this donation: $" << fixed << setprecision(2) << amount_left_to_target << endl;
+                } else { // Closed
+                     cout << "Charity '" << charities[i].name << "' is CLOSED. You can only decrease this donation or keep it the same (max $" << fixed << setprecision(2) << oldAmount << ")." << endl;
+                     amount_left_to_target = oldAmount;
+                }
+            }
+            break;
+        }
     }
-
-    cout << "✅ Donation amount successfully modified to $" << fixed << setprecision(2) << newDonationAmount << ".\n";
+    while (true) {
+        cout << "Enter new donation amount: $"; string inputAmountStr; getline(cin, inputAmountStr);
+        if (inputAmountStr.empty()){ cout << "No amount entered. Please try again." << endl; continue; }
+        try { newDonationAmount = stof(inputAmountStr); }
+        catch (const std::exception&) { cout << "Invalid number. Please try again." << endl; continue; }
+        if (newDonationAmount <= 0) {
+            cout << "New donation amount must be positive." << endl;
+        } else if (charity_has_target_limit && newDonationAmount > amount_left_to_target) {
+            cout << "New amount $" << fixed << setprecision(2) << newDonationAmount
+                 << " is too high. Max allowed new amount for this donation is $"
+                 << fixed << setprecision(2) << amount_left_to_target << "." << endl;
+        } else {
+            break;
+        }
+    }
+    float amountDifference = newDonationAmount - oldAmount;
+    donationToModify.amount = newDonationAmount;
+    donationToModify.d = getCurrentDateTime();
+    if (originalCharityIndex != -1) {
+        charities[originalCharityIndex].current_amount += amountDifference;
+        charities[originalCharityIndex].d = getCurrentDateTime();
+        bool oldCharityStatusBool = charities[originalCharityIndex].status;
+        charities[originalCharityIndex].status = !(charities[originalCharityIndex].target_amount > 0.0f &&
+                                                charities[originalCharityIndex].current_amount >= charities[originalCharityIndex].target_amount);
+        if (oldCharityStatusBool != charities[originalCharityIndex].status) {
+            cout << "Charity '" << charities[originalCharityIndex].name << "' status changed to: "
+                 << (charities[originalCharityIndex].status ? "Active" : "Closed") << endl;
+        }
+        cout << "✅ Charity '" << charities[originalCharityIndex].name << "' current amount updated to $"
+             << fixed << setprecision(2) << charities[originalCharityIndex].current_amount << endl;
+    } else if (charityIdOfDonation != -1) {
+        cout << "⚠️ Warning: Original charity (ID: " << charityIdOfDonation
+             << ") for this donation was not found in the current charities list. Its total amount cannot be updated." << endl;
+    }
+    cout << "✅ Donation No. " << selection_num << " successfully modified to $"
+         << fixed << setprecision(2) << newDonationAmount << ".\n";
 }
 
-
-void cancelDonation(client& user, charity*& charities, int& charityCount) {
-    if (user.number_ofdonations == 0) {
+void cancelDonation(client& user, charity*& charities, int charityCount, const charity* allCharities, int totalCharityCount) {
+    if (user.number_ofdonations == 0 || user.donations == nullptr) {
         cout << "You have no donations to cancel.\n";
         return;
     }
-
-    displayUserDonations(user);
+    displayUserDonations(user, allCharities, totalCharityCount);
     if (user.number_ofdonations == 0) return;
-
-    cout << "Enter the No. of the donation you wish to cancel (from the list above): ";
+    cout << "Enter the No. of the donation you wish to cancel (from the list above, 0 to cancel): ";
     int selection_num;
-    while (!(cin >> selection_num) || selection_num <= 0) {
-        cout << "Invalid input. Please enter a valid number from the list: ";
+    while (!(cin >> selection_num) || selection_num < 0 || selection_num > user.number_ofdonations) {
+        cout << "Invalid input. Please enter a valid number (1 to "
+             << user.number_ofdonations << ") or 0 to cancel: ";
         cin.clear();
         cin.ignore(numeric_limits<streamsize>::max(), '\n');
     }
-
-    string filePath = "../Project_ALL/data/donations.json";
-    json donationsArray;
-    ifstream inFile(filePath);
-
-    if (!inFile.is_open()) {
-        cerr << "❌ Could not open donations.json to cancel donation.\n";
+    cin.ignore(numeric_limits<streamsize>::max(), '\n');
+    if (selection_num == 0) {
+        cout << "Cancellation cancelled." << endl;
         return;
     }
-    try {
-        inFile >> donationsArray;
-        if (!donationsArray.is_array()) {
-            cerr << "❌ donations.json is not a valid array. Cannot cancel donation.\n";
-            inFile.close();
+    int indexToCancel = selection_num - 1;
+    float cancelledAmount = user.donations[indexToCancel].amount;
+    int charityIdOfCancelledDonation = user.donations[indexToCancel].charity_id;
+    string donationIdCancelled = user.donations[indexToCancel].donation_id;
+    cout << "Cancelling your donation No. " << selection_num << " of $" << fixed << setprecision(2) << cancelledAmount
+         << " (Donation ID: " << donationIdCancelled << ")." << endl;
+    if (user.number_ofdonations == 1) {
+        delete[] user.donations;
+        user.donations = nullptr;
+    } else {
+        donationn* temp_donations = new (std::nothrow) donationn[user.number_ofdonations - 1];
+        if (temp_donations == nullptr) {
+            cerr << "❌ Memory allocation failed during donation cancellation. Operation aborted." << endl;
             return;
         }
-    } catch (json::parse_error& e) {
-        cerr << "❌ Error parsing donations.json: " << e.what() << endl;
-        inFile.close();
-        return;
-    }
-    inFile.close();
-
-    int currentUserDonationIndex = 0;
-    int targetDonationJsonIndex = -1;
-    json newDonationsArray = json::array();
-    double cancelledAmount = 0;
-    int charityIdOfCancelledDonation = -1;
-
-    for (int i = 0; i < donationsArray.size(); ++i) {
-        const auto& donation = donationsArray[i];
-        if (donation.value("user_id", -1) == user.user_id) {
-            currentUserDonationIndex++;
-            if (currentUserDonationIndex == selection_num) {
-                targetDonationJsonIndex = i;
-                cancelledAmount = donation.value("donation_amount", 0.0);
-                charityIdOfCancelledDonation = donation.value("charity_id", -1);
-                cout << "Cancelling your donation of $" << fixed << setprecision(2) << cancelledAmount
-                     << " to '" << donation.value("charity_name", "Unknown") << "'." << endl;
-            } else {
-                newDonationsArray.push_back(donation);
+        for (int i = 0, j = 0; i < user.number_ofdonations; ++i) {
+            if (i == indexToCancel) {
+                continue;
             }
-        } else {
-            newDonationsArray.push_back(donation);
+            temp_donations[j++] = user.donations[i];
         }
+        delete[] user.donations;
+        user.donations = temp_donations;
     }
-
-    if (targetDonationJsonIndex == -1) {
-        cout << "❌ Donation selection No. " << selection_num << " not found for your account.\n";
-        return;
-    }
-
-    writeAllDonationsToFile(newDonationsArray);
-
-    bool charityInMemoryFound = false;
-    if (charityIdOfCancelledDonation != -1) {
-        for (int i = 0; i < charityCount; ++i) {
-            if (charities[i].charity_id == charityIdOfCancelledDonation) {
-                charities[i].current_amount -= cancelledAmount;
-                if (charities[i].current_amount < 0) charities[i].current_amount = 0;
-                cout << "✅ Charity '" << charities[i].name << "' current amount updated to $"
-                     << fixed << setprecision(2) << charities[i].current_amount << endl;
-                charityInMemoryFound = true;
-                break;
-            }
-        }
-    }
-     if (!charityInMemoryFound && charityIdOfCancelledDonation != -1) {
-        cerr << "⚠️ Could not find charity with ID " << charityIdOfCancelledDonation
-             << " in memory to update its amount after cancellation." << endl;
-    }
-
     user.number_ofdonations--;
-    cout << "✅ Donation successfully cancelled.\n";
-}
-
-void writeAllDonationsToFile(const json& donationsArray) {
-    string filePath = "../Project_ALL/data/donations.json";
-    ofstream outFile(filePath);
-    if (outFile.is_open()) {
-        outFile << setw(4) << donationsArray << endl;
-        outFile.close();
-    } else {
-        cerr << "❌ Could not open " << filePath << " for writing. Donation records not saved." << endl;
+    int originalCharityIndex = -1;
+    for (int i = 0; i < charityCount; ++i) { if (charities[i].charity_id == charityIdOfCancelledDonation) { originalCharityIndex = i; break; }}
+    if (originalCharityIndex != -1) {
+        charities[originalCharityIndex].current_amount -= cancelledAmount;
+        if (charities[originalCharityIndex].current_amount < 0) {
+            charities[originalCharityIndex].current_amount = 0.0f;
+        }
+        charities[originalCharityIndex].d = getCurrentDateTime();
+        bool oldCharityStatusBool = charities[originalCharityIndex].status;
+        charities[originalCharityIndex].status = !(charities[originalCharityIndex].target_amount > 0.0f &&
+                                                charities[originalCharityIndex].current_amount >= charities[originalCharityIndex].target_amount);
+        if (oldCharityStatusBool != charities[originalCharityIndex].status) {
+            cout << "Charity '" << charities[originalCharityIndex].name << "' status changed to: "
+                 << (charities[originalCharityIndex].status ? "Active" : "Closed") << endl;
+        }
+        cout << "✅ Charity '" << charities[originalCharityIndex].name << "' current amount updated to $"
+             << fixed << setprecision(2) << charities[originalCharityIndex].current_amount << endl;
+    } else if (charityIdOfCancelledDonation != -1) {
+        cout << "⚠️ Warning: Original charity (ID: " << charityIdOfCancelledDonation
+             << ") for the cancelled donation was not found. Its total amount cannot be updated." << endl;
     }
+    cout << "✅ Donation successfully cancelled.\n";
 }

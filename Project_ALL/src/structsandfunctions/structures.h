@@ -1,7 +1,6 @@
 #ifndef STRUCTURES_H
 #define STRUCTURES_H
 #include <string>
-
 using namespace std;
 struct datee {
     string date;
@@ -9,7 +8,7 @@ struct datee {
 };
 struct donationn {
     string donation_id;
-    string charity_id;
+    int charity_id;
     float amount;
     datee d;
     string message;
@@ -21,7 +20,7 @@ struct charity {
     float target_amount;
     float current_amount;
     datee d;
-    string status; // --> betkun ya this or that
+    bool status; //maybe active maybe open
 };
 struct client {
     int user_id;
@@ -31,7 +30,7 @@ struct client {
     string password;
     string phone;
     int number_ofdonations;
-    donationn* donations; // --since i cant use verctors i used a dynamic arayy
+    donationn* donations;// --since i cant use verctors i used a dynamic arayy
     string role; //i8sa admin or donor
 };
 client registerNewUser();
