@@ -6,7 +6,7 @@
 #include <fstream>
 #include <filesystem>
 #include <iomanip>
-
+#include "structsandfunctions/log_thingy.h"
 using std::cout;
 using std::cin;
 using std::endl;
@@ -46,6 +46,7 @@ void adminPanel(client& admin, charity*& charities, int& charityCount) {
         cout << T_BORDER_TL << string(menu_width, T_BORDER_H[0]) << T_BORDER_TR << endl;
         cout << T_BORDER_V << string(header_pad_left, ' ') << header << string(header_pad_right, ' ') << T_BORDER_V << endl;
         cout << T_BORDER_LJ << string(menu_width, T_BORDER_H[0]) << T_BORDER_RJ << endl;
+        LOG_INFO("User logged in: " + admin.email);
 
         printMenuItem(1, "Add a charity", menu_width);
         printMenuItem(2, "Modify a charity", menu_width);
@@ -94,6 +95,7 @@ void adminPanel(client& admin, charity*& charities, int& charityCount) {
                 break;
             case 0:
                 cout << "Logging out from Admin Panel...\n";
+            LOG_INFO("Admin logged out: " + admin.email);
                 break;
             default:
                 cout << "Invalid option. Try again.\n";
@@ -125,6 +127,7 @@ void userPanel(client& user, charity*& charities, int& charityCount) {
         cout << T_BORDER_V << string(header_pad_left, ' ') << header << string(header_pad_right, ' ') << T_BORDER_V << endl;
         cout << T_BORDER_V << string(donations_info_pad_left, ' ') << donations_info << string(donations_info_pad_right, ' ') << T_BORDER_V << endl;
         cout << T_BORDER_LJ << string(menu_width, T_BORDER_H[0]) << T_BORDER_RJ << endl;
+        LOG_INFO("User logged in: " + user.email);
 
         printMenuItem(1, "Browse charities", menu_width);
         printMenuItem(2, "Make donation", menu_width);
@@ -237,6 +240,7 @@ void userPanel(client& user, charity*& charities, int& charityCount) {
             case 0:
                 cout << "Logging out from User Panel...\n";
                 break;
+            LOG_INFO("User logged out: " + user.email);
             default:
                 cout << "Invalid option. Try again.\n";
         }
