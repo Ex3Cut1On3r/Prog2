@@ -3,196 +3,152 @@
 #include <fstream>
 #include <iostream>
 #include <string>
-#include <vector>
 #include <cstdlib>
 #include <iomanip>
 #include <sstream>
-#include <map>
 #include <chrono>
 #include <ctime>
-using namespace std;
+#include <new> // Required for std::nothrow
+
+using std::string;
+using std::cout;
+using std::cerr;
+using std::endl;
+using std::ifstream;
+using std::ofstream;
+using std::ostringstream;
+using std::setprecision;
+using std::fixed;
+using std::to_string;
 using json = nlohmann::json;
+
 string format_timestamp(long long unix_timestamp) {
-    if (unix_timestamp <= 0) return "N/A";
-    auto tp = chrono::system_clock::from_time_t(static_cast<time_t>(unix_timestamp));
-    time_t time_tt = chrono::system_clock::to_time_t(tp);
-    tm gmt_tm_struct;
+    if (unix_timestamp <= 0) {
+        return "N/A";
+    }
+    auto time_point = std::chrono::system_clock::from_time_t(static_cast<std::time_t>(unix_timestamp));
+    std::time_t time_tt = std::chrono::system_clock::to_time_t(time_point);
+
+    std::tm gmt_tm_struct = {};
 #ifdef _MSC_VER
-    gmtime_s(&gmt_tm_struct, &time_tt);
+    if (gmtime_s(&gmt_tm_struct, &time_tt) != 0) {
+        return "Timestamp Conversion Error (gmtime_s)";
+    }
 #else
-    tm* p_gmt_tm = gmtime(&time_tt);
+    std::tm* p_gmt_tm = gmtime(&time_tt);
     if (p_gmt_tm) {
         gmt_tm_struct = *p_gmt_tm;
     } else {
-        return "Invalid Timestamp";
+        return "Invalid Timestamp (gmtime failed)";
     }
 #endif
     char buffer[80];
-    if (strftime(buffer, sizeof(buffer), "%Y-%m-%d %H:%M:%S UTC", &gmt_tm_struct) == 0) {
-        return "Formatting Error";
+    if (std::strftime(buffer, sizeof(buffer), "%Y-%m-%d %H:%M:%S UTC", &gmt_tm_struct) == 0) {
+        return "Timestamp Formatting Error (strftime)";
     }
     return string(buffer);
 }
-void export_to_html(const string& json_file_path, const string& html_file_path, const string& logo_path_param) {
-    cout << "Trying to open JSON: [" << json_file_path << "]" << endl;
+
+void export_to_html(
+    const string& json_file_path,
+    const string& html_file_path,
+    const string& logo_path_param,
+    int target_user_id,
+    const string& target_user_name) {
+
+    cout << "INFO: Trying to open JSON for report: [" << json_file_path << "]" << endl;
     ifstream in(json_file_path);
     if (!in.is_open()) {
-        cout << "Failed to open JSON file: " << json_file_path << endl;
+        cerr << "ERROR: Failed to open JSON file for report: " << json_file_path << endl;
         return;
     }
-    json data;
+
+    json all_donations_data;
     try {
-        in >> data;
+        in >> all_donations_data;
     } catch (json::parse_error& e) {
-        cout << "JSON parsing error: " << e.what() << " at byte " << e.byte << endl;
+        cerr << "ERROR: JSON parsing error for report: " << e.what() << " at byte " << e.byte << endl;
         in.close();
         return;
     }
     in.close();
-    if (!data.is_array()) {
-        cout << "JSON data is not an array as expected." << endl;
+
+    if (!all_donations_data.is_array()) {
+        cerr << "ERROR: JSON data for report is not an array as expected." << endl;
         return;
     }
-    map<string, vector<json>> donations_by_user;
-    if (data.is_array()) {
-        for (const auto& item : data) {
-            string userName = "Anonymous Donor";
-            if (item.contains("user_name") && item["user_name"].is_string()) {
-                userName = item["user_name"].get<string>();
-                if (userName.empty()) userName = "Anonymous Donor (empty name)";
+
+    json* user_specific_donations_ptr = nullptr;
+    int user_donation_count = 0;
+    int user_donation_capacity = 0;
+
+    for (const auto& item : all_donations_data) {
+        bool match = false;
+        if (item.contains("user_id") && item["user_id"].is_number_integer()) {
+            if (item["user_id"].get<int>() == target_user_id) {
+                match = true;
             }
-            donations_by_user[userName].push_back(item);
+        } else if (item.contains("user_name") && item["user_name"].is_string() && item["user_name"].get<string>() == target_user_name) {
+            if (!item.contains("user_id")) {
+                match = true;
+            }
+        }
+
+        if (match) {
+            if (user_donation_count == user_donation_capacity) {
+                int new_capacity = (user_donation_capacity == 0) ? 10 : user_donation_capacity * 2;
+                json* temp_ptr = new (std::nothrow) json[new_capacity];
+                if (temp_ptr == nullptr) {
+                    cerr << "ERROR: Memory allocation failed while filtering donations for HTML report." << endl;
+                    if (user_specific_donations_ptr != nullptr) {
+                        delete[] user_specific_donations_ptr;
+                    }
+                    return;
+                }
+                for (int k = 0; k < user_donation_count; ++k) {
+                    temp_ptr[k] = user_specific_donations_ptr[k];
+                }
+                if (user_specific_donations_ptr != nullptr) {
+                    delete[] user_specific_donations_ptr;
+                }
+                user_specific_donations_ptr = temp_ptr;
+                user_donation_capacity = new_capacity;
+            }
+            user_specific_donations_ptr[user_donation_count++] = item;
         }
     }
 
     string logo_path_for_html = logo_path_param;
     ofstream out(html_file_path);
     if (!out.is_open()) {
-        cout << "Failed to create HTML file: " << html_file_path << endl;
+        cerr << "ERROR: Failed to create HTML file: " << html_file_path << endl;
+        if (user_specific_donations_ptr != nullptr) delete[] user_specific_donations_ptr;
         return;
     }
+
     out << "<!DOCTYPE html>\n";
     out << "<html lang=\"en\">\n<head>\n";
     out << "  <meta charset=\"UTF-8\">\n";
     out << "  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n";
-    out << "  <title>Donations Report</title>\n";
+    out << "  <title>Donation Report for " << target_user_name << "</title>\n";
     out << "  <link href=\"https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap\" rel=\"stylesheet\">\n";
     out << "  <style>\n";
-    out << "    body {\n";
-    out << "        font-family: 'Inter', sans-serif;\n";
-    out << "        margin: 0;\n";
-    out << "        padding: 0;\n";
-    out << "        background-color: #f4f7f9;\n";
-    out << "        color: #333;\n";
-    out << "        line-height: 1.6;\n";
-    out << "    }\n";
-    out << "    .report-header {\n";
-    out << "        background-color: #FFFFFF;\n";
-    out << "        padding: 20px 40px;\n";
-    out << "        display: flex;\n";
-    out << "        align-items: center;\n";
-    out << "        justify-content: center;\n";
-    out << "        box-shadow: 0 2px 5px rgba(0,0,0,0.1);\n";
-    out << "    }\n";
-    out << "    .report-header .logo {\n";
-    out << "        max-height: 150px;\n";
-    out << "        width: auto;\n";
-    out << "    }\n";
-    out << "    .container {\n";
-    out << "        padding: 30px 40px;\n";
-    out << "        max-width: 900px;\n";
-    out << "        margin: 20px auto;\n";
-    out << "    }\n";
-    out << "    .report-main-title {\n";
-    out << "        text-align: center;\n";
-    out << "        color: #34495e;\n";
-    out << "        margin-bottom: 40px;\n";
-    out << "        font-size: 2.5em;\n";
-    out << "        font-weight: 700;\n";
-    out << "    }\n";
-    out << "    .user-section {\n";
-    out << "        margin-bottom: 40px;\n";
-    out << "        background-color: #ffffff;\n";
-    out << "        border-radius: 8px;\n";
-    out << "        box-shadow: 0 5px 15px rgba(0,0,0,0.07);\n";
-    out << "        padding: 25px 30px;\n";
-    out << "    }\n";
-    out << "    .user-section h2 {\n";
-    out << "        font-size: 1.8em;\n";
-    out << "        color: #2980b9;\n";
-    out << "        margin-top: 0;\n";
-    out << "        margin-bottom: 25px;\n";
-    out << "        padding-bottom: 10px;\n";
-    out << "        border-bottom: 2px solid #ecf0f1;\n";
-    out << "    }\n";
-    out << "    .donation-card {\n";
-    out << "        background-color: #fdfdfd;\n";
-    out << "        border: 1px solid #e0e6ed;\n";
-    out << "        border-radius: 6px;\n";
-    out << "        padding: 20px;\n";
-    out << "        margin-bottom: 20px;\n";
-    out << "    }\n";
-    out << "    .donation-card p {\n";
-    out << "        margin: 0 0 10px 0;\n";
-    out << "        font-size: 0.95em;\n";
-    out << "        color: #555;\n";
-    out << "    }\n";
-    out << "    .donation-card p strong {\n";
-    out << "        color: #333;\n";
-    out << "        min-width: 120px;\n";
-    out << "        display: inline-block;\n";
-    out << "        font-weight: 500;\n";
-    out << "    }\n";
-    out << "    .donation-card p:last-child {\n";
-    out << "        margin-bottom: 0;\n";
-    out << "    }\n";
-    out << "    .no-donations {\n";
-    out << "        text-align: center;\n";
-    out << "        font-size: 1.1em;\n";
-    out << "        color: #7f8c8d;\n";
-    out << "        padding: 30px;\n";
-    out << "    }\n";
-    out << "    .footer {\n";
-    out << "        text-align: center;\n";
-    out << "        padding: 25px;\n";
-    out << "        margin-top: 50px;\n";
-    out << "        font-size: 0.9em;\n";
-    out << "        color: #888;\n";
-    out << "        border-top: 1px solid #e0e6ed;\n";
-    out << "    }\n";
-    out << "    @media print {\n";
-    out << "        body { background-color: #fff; -webkit-print-color-adjust: exact; print-color-adjust: exact;}\n";
-    out << "        .report-header { box-shadow: none; }\n";
-    out << "        .container { margin: 0 auto; padding: 20px 0; box-shadow: none; }\n";
-    out << "        .user-section {\n";
-    out << "            page-break-before: always;\n";
-    out << "            box-shadow: none;\n";
-    out << "            border: 1px solid #ccc;\n";
-    out << "            margin: 20px 0;\n";
-    out << "        }\n";
-    out << "        .user-section:first-of-type {\n";
-    out << "            page-break-before: auto;\n";
-    out << "        }\n";
-    out << "        .donation-card {\n";
-    out << "            page-break-inside: avoid;\n";
-    out << "            box-shadow: none;\n";
-    out << "            border: 1px solid #ddd;\n";
-    out << "        }\n";
-    out << "        .footer { border-top: 1px solid #ccc; }\n";
-    out << "    }\n";
-    out << "    @media (max-width: 768px) {\n";
-    out << "        .report-header { \n";
-    out << "           padding: 15px; \n";
-    out << "        }\n";
-    out << "        .report-header .logo { \n";
-    out << "           max-height: 100px; \n";
-    out << "        }\n";
-    out << "        .container { padding: 20px 15px; }\n";
-    out << "        .report-main-title { font-size: 2em; }\n";
-    out << "        .user-section { padding: 20px; }\n";
-    out << "        .user-section h2 { font-size: 1.5em; }\n";
-    out << "        .donation-card p strong { min-width: 100px; }\n";
-    out << "    }\n";
+    out << "    body { font-family: 'Inter', sans-serif; margin: 0; padding: 0; background-color: #f8f9fa; color: #212529; line-height: 1.65; font-size: 16px; }\n";
+    out << "    .report-header { background-color: #ffffff; padding: 25px 40px; display: flex; align-items: center; justify-content: center; border-bottom: 1px solid #dee2e6; }\n";
+    out << "    .report-header .logo { max-height: 120px; width: auto; }\n";
+    out << "    .container { padding: 30px 40px; max-width: 960px; margin: 30px auto; background-color: #ffffff; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }\n";
+    out << "    .report-main-title { text-align: center; color: #0056b3; margin-bottom: 15px; font-size: 2.4em; font-weight: 700; }\n";
+    out << "    .report-user-name { text-align: center; color: #495057; margin-bottom: 35px; font-size: 1.6em; font-weight: 500; }\n";
+    out << "    .donations-section { margin-bottom: 30px; }\n";
+    out << "    .donation-card { background-color: #ffffff; border: 1px solid #e9ecef; border-left: 5px solid #007bff; border-radius: 6px; padding: 20px 25px; margin-bottom: 25px; transition: box-shadow 0.3s ease; }\n";
+    out << "    .donation-card:hover { box-shadow: 0 6px 18px rgba(0,0,0,0.08); }\n";
+    out << "    .donation-card p { margin: 0 0 12px 0; font-size: 1em; color: #495057; display: flex; align-items: center; }\n";
+    out << "    .donation-card p strong { color: #343a40; min-width: 140px; display: inline-block; font-weight: 600; margin-right: 10px; }\n";
+    out << "    .donation-card p:last-child { margin-bottom: 0; }\n";
+    out << "    .no-donations { text-align: center; font-size: 1.1em; color: #6c757d; padding: 40px; background-color: #f1f3f5; border-radius: 6px; }\n";
+    out << "    .footer { text-align: center; padding: 30px; margin-top: 40px; font-size: 0.9em; color: #6c757d; border-top: 1px solid #dee2e6; background-color: #ffffff; }\n";
+    out << "    @media print { body { background-color: #fff !important; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; font-size: 12pt;} .report-header, .footer { box-shadow: none; border-bottom: none; border-top: 1px solid #ccc !important; } .container { margin: 0 auto; padding: 10mm 0; box-shadow: none; width: 100% !important; max-width: 100% !important; } .donations-section { page-break-before: auto; box-shadow: none; border: none; margin: 10mm 0;} .donation-card { page-break-inside: avoid; box-shadow: none; border: 1px solid #ccc !important; border-left-width: 3px !important; margin-bottom:5mm !important; } .report-header .logo {max-height: 100px !important;} h1,h2 {page-break-after: avoid;} }\n";
+    out << "    @media (max-width: 768px) { .report-header { padding: 20px 15px; } .report-header .logo { max-height: 100px; } .container { padding: 20px 15px; margin-top:15px; } .report-main-title { font-size: 2em; } .report-user-name { font-size: 1.3em; } .donations-section { padding: 20px; } .donation-card p strong { min-width: 110px; } body {font-size:15px;} }\n";
     out << "  </style>\n";
     out << "</head>\n<body>\n";
 
@@ -202,85 +158,107 @@ void export_to_html(const string& json_file_path, const string& html_file_path, 
 
     out << "  <div class=\"container\">\n";
     out << "    <h1 class=\"report-main-title\">Donation Report</h1>\n";
+    out << "    <h2 class=\"report-user-name\">For: " << target_user_name << " (User ID: " << target_user_id << ")</h2>\n";
 
-    if (donations_by_user.empty()) {
-        out << "    <div class=\"user-section\">\n";
-        out << "      <p class=\"no-donations\">No donations found in the report.</p>\n";
+    if (user_donation_count == 0) {
+        out << "    <div class=\"donations-section\">\n";
+        out << "      <p class=\"no-donations\">No donations found for this user.</p>\n";
         out << "    </div>\n";
     } else {
-        bool first_user_section = true;
-        for (const auto& pair : donations_by_user) {
-            const string& userName = pair.first;
-            const vector<json>& user_donations = pair.second;
+        out << "    <div class=\"donations-section\">\n";
+        for (int i = 0; i < user_donation_count; ++i) {
+            const auto& item = user_specific_donations_ptr[i];
+            out << "      <div class=\"donation-card\">\n";
+            out << "        <p><strong>Donation ID:</strong> <span>" << (item.contains("donation_id") && item["donation_id"].is_string() ? item["donation_id"].get<string>() : "N/A") << "</span></p>\n";
+            out << "        <p><strong>Charity:</strong> <span>" << (item.contains("charity_name") && item["charity_name"].is_string() ? item["charity_name"].get<string>() : "N/A") << "</span></p>\n";
+            out << "        <p><strong>Charity ID:</strong> <span>" << (item.contains("charity_id") && item["charity_id"].is_number_integer() ? to_string(item["charity_id"].get<int>()) : "N/A") << "</span></p>\n";
 
-            out << "    <div class=\"user-section\"" << (first_user_section ? " style=\"page-break-before: auto;\"" : "") << ">\n";
-            out << "      <h2>" << userName << "</h2>\n";
-
-            if (user_donations.empty()) {
-                 out << "<p>No donations recorded for this user.</p>\n";
-            } else {
-                for (const auto& item : user_donations) {
-                    out << "      <div class=\"donation-card\">\n";
-                    out << "        <p><strong>Charity:</strong> " << (item.contains("charity_name") && item["charity_name"].is_string() ? item["charity_name"].get<string>() : "N/A") << "</p>\n";
-
-                    string amount_str = "N/A";
-                    if (item.contains("donation_amount")) {
-                        if (item["donation_amount"].is_number()) {
-                            double amount_val = item["donation_amount"].get<double>();
-                            ostringstream oss;
-                            oss << fixed << setprecision(2) << amount_val;
-                            amount_str = "$" + oss.str();
-                        } else if (item["donation_amount"].is_string()) {
-                            try {
-                                double amount_val = stod(item["donation_amount"].get<string>());
-                                ostringstream oss;
-                                oss << fixed << setprecision(2) << amount_val;
-                                amount_str = "$" + oss.str();
-                            } catch (const exception&) {
-                                amount_str = item["donation_amount"].get<string>();
-                            }
-                        }
+            string amount_str = "N/A";
+            if (item.contains("donation_amount")) {
+                if (item["donation_amount"].is_number()) {
+                    double amount_val = item["donation_amount"].get<double>();
+                    ostringstream oss;
+                    oss << fixed << setprecision(2) << amount_val;
+                    amount_str = "$" + oss.str();
+                } else if (item["donation_amount"].is_string()) {
+                    try {
+                        double amount_val = stod(item["donation_amount"].get<string>());
+                        ostringstream oss;
+                        oss << fixed << setprecision(2) << amount_val;
+                        amount_str = "$" + oss.str();
+                    } catch (const std::exception&) {
+                        amount_str = item["donation_amount"].get<string>();
                     }
-                    out << "        <p><strong>Amount:</strong> " << amount_str << "</p>\n";
-
-                    string formatted_time = "N/A";
-                    if (item.contains("donation_timestamp") && item["donation_timestamp"].is_number()) {
-                        formatted_time = format_timestamp(item["donation_timestamp"].get<long long>());
-                    }
-                    out << "        <p><strong>Date:</strong> " << formatted_time << "</p>\n";
-                    out << "      </div>\n";
                 }
             }
-            out << "    </div>\n";
-            first_user_section = false;
+            out << "        <p><strong>Amount:</strong> <span>" << amount_str << "</span></p>\n";
+
+            string formatted_time_utc = "N/A";
+            if (item.contains("donation_timestamp") && item["donation_timestamp"].is_number()) {
+                formatted_time_utc = format_timestamp(item["donation_timestamp"].get<long long>());
+            }
+            out << "        <p><strong>Date (UTC):</strong> <span>" << formatted_time_utc << "</span></p>\n";
+
+            if (item.contains("d") && item["d"].is_object()) {
+                out << "        <p><strong>Recorded At (Local):</strong> <span>"
+                    << item["d"].value("date", "N/A") << " "
+                    << item["d"].value("time", "N/A") << "</span></p>\n";
+            }
+
+            if (item.contains("message") && item["message"].is_string() && !item["message"].get<string>().empty()){
+                 out << "        <p><strong>Message:</strong> <span>" << item["message"].get<string>() << "</span></p>\n";
+            }
+
+            out << "      </div>\n";
         }
+        out << "    </div>\n";
     }
 
     out << "  </div>\n";
     out << "  <div class=\"footer\">\n";
-    time_t now = time(nullptr);
-    char time_buf[100];
-    strftime(time_buf, sizeof(time_buf), "%Y-%m-%d %H:%M:%S %Z", localtime(&now));
-    out << "    <p>Report Generated on: " << time_buf << "</p>\n";
+    std::time_t now_time_t_footer = std::time(nullptr);
+    char time_buf_footer[100];
+    std::tm ltm_struct_footer = {};
 
-    tm ltm_struct;
 #ifdef _MSC_VER
-    localtime_s(<m_struct, &now);
+    if (localtime_s(<m_struct_footer, &now_time_t_footer) != 0) {
+        cerr << "Warning: localtime_s failed in footer." << endl;
+        ltm_struct_footer.tm_year = 124;
+        ltm_struct_footer.tm_mon = 0;
+        ltm_struct_footer.tm_mday = 1;
+    }
 #else
-    tm* p_ltm = localtime(&now);
-    if (p_ltm) {
-        ltm_struct = *p_ltm;
+    std::tm* p_ltm_footer = localtime(&now_time_t_footer);
+    if (p_ltm_footer) {
+        ltm_struct_footer = *p_ltm_footer;
+    } else {
+        cerr << "Warning: localtime failed in footer." << endl;
+        ltm_struct_footer.tm_year = 124;
+        ltm_struct_footer.tm_mon = 0;
+        ltm_struct_footer.tm_mday = 1;
     }
 #endif
-    out << "    <p>© " << (ltm_struct.tm_year + 1900) << " Charlie Haddad - UA. All rights reserved.</p>\n";
+
+    if (std::strftime(time_buf_footer, sizeof(time_buf_footer), "%Y-%m-%d %H:%M:%S", &ltm_struct_footer) != 0) {
+         out << "    <p>Report Generated on: " << time_buf_footer << " (Local)</p>\n";
+    } else {
+         out << "    <p>Report Generated on: Error formatting date/time</p>\n";
+    }
+    out << "    <p>© " << (ltm_struct_footer.tm_year + 1900) << " Charlie Haddad - UA. All rights reserved.</p>\n";
     out << "  </div>\n";
 
     out << "</body>\n</html>\n";
     out.close();
-    cout << "HTML file generated: " << html_file_path << endl;
+    if (out.fail()) {
+        cerr << "ERROR: Failed to write all data to HTML file: " << html_file_path << endl;
+    } else {
+        cout << "INFO: HTML file generated for user " << target_user_name << ": " << html_file_path << endl;
+    }
+
+    if (user_specific_donations_ptr != nullptr) {
+        delete[] user_specific_donations_ptr;
+    }
 }
-
-
 
 bool convert_html_to_pdf(const string& html_file_path, const string& pdf_file_path) {
     string command = "wkhtmltopdf";
@@ -294,16 +272,16 @@ bool convert_html_to_pdf(const string& html_file_path, const string& pdf_file_pa
     command += " --footer-font-size 8";
     command += " \"" + html_file_path + "\" \"" + pdf_file_path + "\"";
 
-    cout << "Executing command: [" << command << "]" << endl;
+    cout << "INFO: Executing PDF conversion command: [" << command << "]" << endl;
     int result = system(command.c_str());
 
     if (result == 0) {
-        cout << "PDF conversion command executed successfully." << endl;
+        cout << "INFO: PDF conversion command executed successfully." << endl;
         return true;
     } else {
-        cout << "PDF conversion command failed. Exit code from system(): " << result << endl;
-        cout << "Ensure wkhtmltopdf is installed and in your system's PATH." << endl;
-        cout << "Check wkhtmltopdf output/errors if any are printed to console by the command itself." << endl;
+        cerr << "ERROR: PDF conversion command failed. Exit code: " << result << endl;
+        cerr << "Ensure wkhtmltopdf is installed and in your system's PATH." << endl;
+        cerr << "Check wkhtmltopdf output/errors if any are printed to console by the command itself." << endl;
         return false;
     }
 }
