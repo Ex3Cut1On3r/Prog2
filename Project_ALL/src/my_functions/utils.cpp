@@ -22,7 +22,6 @@ datee getCurrentDateTime() {
     }
 #else
     if (localtime_r(&rawTime, &localTimeInfo) == nullptr) {
-        // Silently set default values on error
         currentDateTimeVal.date = "0000-00-00";
         currentDateTimeVal.time = "00:00:00";
         return currentDateTimeVal;

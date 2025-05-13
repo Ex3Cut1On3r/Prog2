@@ -4,14 +4,10 @@ project(charles_project LANGUAGES CXX)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 
-# --- Include Directories ---
-# Add the 'src' directory of Project_ALL as an include path.
-# This means when the compiler sees #include "...", it will look inside
-# C:/Users/Charlie/Documents/nigga/Programming2_Project-main/Project_ALL/src/
+
 include_directories(Project_ALL/src)
 
-# --- Define the executable ---
-# Paths to .cpp files are relative to this CMakeLists.txt file
+
 add_executable(charles_project
         Project_ALL/src/main.cpp
         Project_ALL/src/my_functions/exporttopdf.cpp
@@ -25,7 +21,7 @@ add_executable(charles_project
         Project_ALL/src/my_functions/logger.cpp
 )
 
-# --- Linker Flags ---
+
 if(WIN32)
     target_link_libraries(charles_project PRIVATE ws2_32)
 endif()

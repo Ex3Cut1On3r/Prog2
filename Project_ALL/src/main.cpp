@@ -1,4 +1,3 @@
-// File: Project_ALL/src/main.cpp
 #define WIN32_LEAN_AND_MEAN
 #define NOMINMAX
 

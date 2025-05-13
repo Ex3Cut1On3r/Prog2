@@ -16,8 +16,7 @@
 #endif
 #include <windows.h>
 #endif
-
-// ... (Console Color Constants and setDisplayCharitiesConsoleColor as before) ...
+//colors
 #ifdef _WIN32
 const WORD CC_DEFAULT = FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE;
 const WORD CC_TABLE_BORDER = FOREGROUND_BLUE | FOREGROUND_GREEN;
@@ -57,12 +56,9 @@ using std::cin;
 using std::getline;
 using std::numeric_limits;
 using std::streamsize;
-// No need for using std::tolower here if we use ::tolower explicitly
 using json = nlohmann::json;
 
-// extern datee getCurrentDateTime(); // Make sure this is available
 
-// ... (displayCharities function remains the same as the previous "bool status" version)
 void displayCharities(const charity* charities, int charityCount) {
     if (charityCount == 0) {
         setDisplayCharitiesConsoleColor(CC_INFO);
@@ -267,10 +263,6 @@ void loadCharities(charity*& charities, int& charityCount) {
 }
 
 
-// ... (saveCharities, addCharity, modifyCharity, removeCharity functions remain the same as the previous "bool status" version)
-// They already use the boolean `charity.status` correctly.
-// Make sure `getCurrentDateTime()` is defined and accessible for addCharity and modifyCharity.
-// Make sure `stof()` is available and used correctly for float conversions from string input.
 
 void saveCharities(const charity* charities, int charityCount) {
     string filePath = "../Project_ALL/data/charities.json";
@@ -303,7 +295,7 @@ void saveCharities(const charity* charities, int charityCount) {
         setDisplayCharitiesConsoleColor(CC_DEFAULT);
     }
     outputFile.close();
-    if (!outputFile.good() && outputFile.is_open()){ // Should be !outputFile.good() only, is_open check after close is tricky
+    if (!outputFile.good() && outputFile.is_open()){
          setDisplayCharitiesConsoleColor(CC_ERROR);
          cerr << "❌ Error occurred while closing '" << filePath << "'. Data might not be saved correctly." << endl;
          setDisplayCharitiesConsoleColor(CC_DEFAULT);

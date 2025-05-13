@@ -8,11 +8,14 @@
 #include <sstream>
 #include <chrono>
 #include <ctime>
-#include <new> // Required for std::nothrow
-
+#include <new>
+//   ^
+//   |
+//   |
+//   |
+//  below are the decrlations
 using std::string;
 using std::cout;
-using std::cerr;
 using std::endl;
 using std::ifstream;
 using std::ofstream;
@@ -22,7 +25,7 @@ using std::fixed;
 using std::to_string;
 using json = nlohmann::json;
 
-string format_timestamp(long long unix_timestamp) {
+string format_timestamp(long long unix_timestamp) { //it turns from unix to  a UTC (time of ours like 3.0 UTC/GMT)
     if (unix_timestamp <= 0) {
         return "N/A";
     }
@@ -49,32 +52,27 @@ string format_timestamp(long long unix_timestamp) {
     return string(buffer);
 }
 
-void export_to_html(
-    const string& json_file_path,
-    const string& html_file_path,
-    const string& logo_path_param,
-    int target_user_id,
-    const string& target_user_name) {
+void export_to_html(  //this does everythuiig
+    const string& json_file_path, //path for the file
+    const string& html_file_path, //the path for the html (la2ano it converts min html to pdf)
+    const string& logo_path_param, //logo thingy (bougie design)
+    int target_user_id, // user id (takes it from the user._id based on the user that requests it)
+    const string& target_user_name) { //hayde also from the same logic as the user_id
 
     cout << "INFO: Trying to open JSON for report: [" << json_file_path << "]" << endl;
-    ifstream in(json_file_path);
-    if (!in.is_open()) {
-        cerr << "ERROR: Failed to open JSON file for report: " << json_file_path << endl;
-        return;
-    }
-
+    ifstream in(json_file_path); // it parses the whole file at once (reads it kello ka2ano)
     json all_donations_data;
     try {
         in >> all_donations_data;
     } catch (json::parse_error& e) {
-        cerr << "ERROR: JSON parsing error for report: " << e.what() << " at byte " << e.byte << endl;
+        cout << "ERROR: JSON parsing error for report: " << e.what() << " at byte " << e.byte << endl;
         in.close();
         return;
     }
-    in.close();
-
-    if (!all_donations_data.is_array()) {
-        cerr << "ERROR: JSON data for report is not an array as expected." << endl;
+    in.close(); //we call the in object to free up space w osas (cpp standard library)  (fstream)
+//in.close closes the file
+    if (!all_donations_data.is_array()) { //checks for [ .... ] (eno fi actual data)
+        cout << "ERROR: JSON data for report is not an array as expected." << endl;
         return;
     }
 
@@ -83,7 +81,7 @@ void export_to_html(
     int user_donation_capacity = 0;
 
     for (const auto& item : all_donations_data) {
-        bool match = false;
+        bool match = false; //start a false
         if (item.contains("user_id") && item["user_id"].is_number_integer()) {
             if (item["user_id"].get<int>() == target_user_id) {
                 match = true;
@@ -97,9 +95,9 @@ void export_to_html(
         if (match) {
             if (user_donation_count == user_donation_capacity) {
                 int new_capacity = (user_donation_capacity == 0) ? 10 : user_donation_capacity * 2;
-                json* temp_ptr = new (std::nothrow) json[new_capacity];
+                json* temp_ptr = new (std::nothrow) json[new_capacity]; //nothrow throws a pointer instead
                 if (temp_ptr == nullptr) {
-                    cerr << "ERROR: Memory allocation failed while filtering donations for HTML report." << endl;
+                    cout << "ERROR: Memory allocation failed while filtering donations for HTML report." << endl;
                     if (user_specific_donations_ptr != nullptr) {
                         delete[] user_specific_donations_ptr;
                     }
@@ -121,7 +119,7 @@ void export_to_html(
     string logo_path_for_html = logo_path_param;
     ofstream out(html_file_path);
     if (!out.is_open()) {
-        cerr << "ERROR: Failed to create HTML file: " << html_file_path << endl;
+        cout << "ERROR: Failed to create HTML file: " << html_file_path << endl;
         if (user_specific_donations_ptr != nullptr) delete[] user_specific_donations_ptr;
         return;
     }
@@ -222,7 +220,7 @@ void export_to_html(
 
 #ifdef _MSC_VER
     if (localtime_s(<m_struct_footer, &now_time_t_footer) != 0) {
-        cerr << "Warning: localtime_s failed in footer." << endl;
+        cout << "Warning: localtime_s failed in footer." << endl;
         ltm_struct_footer.tm_year = 124;
         ltm_struct_footer.tm_mon = 0;
         ltm_struct_footer.tm_mday = 1;
@@ -232,7 +230,7 @@ void export_to_html(
     if (p_ltm_footer) {
         ltm_struct_footer = *p_ltm_footer;
     } else {
-        cerr << "Warning: localtime failed in footer." << endl;
+        cout << "Warning: localtime failed in footer." << endl;
         ltm_struct_footer.tm_year = 124;
         ltm_struct_footer.tm_mon = 0;
         ltm_struct_footer.tm_mday = 1;
@@ -250,7 +248,7 @@ void export_to_html(
     out << "</body>\n</html>\n";
     out.close();
     if (out.fail()) {
-        cerr << "ERROR: Failed to write all data to HTML file: " << html_file_path << endl;
+        cout << "ERROR: Failed to write all data to HTML file: " << html_file_path << endl;
     } else {
         cout << "INFO: HTML file generated for user " << target_user_name << ": " << html_file_path << endl;
     }
@@ -279,9 +277,9 @@ bool convert_html_to_pdf(const string& html_file_path, const string& pdf_file_pa
         cout << "INFO: PDF conversion command executed successfully." << endl;
         return true;
     } else {
-        cerr << "ERROR: PDF conversion command failed. Exit code: " << result << endl;
-        cerr << "Ensure wkhtmltopdf is installed and in your system's PATH." << endl;
-        cerr << "Check wkhtmltopdf output/errors if any are printed to console by the command itself." << endl;
+        cout << "ERROR: PDF conversion command failed. Exit code: " << result << endl;
+        cout << "Ensure wkhtmltopdf is installed and in your system's PATH." << endl;
+        cout << "Check wkhtmltopdf output/errors if any are printed to console by the command itself." << endl;
         return false;
     }
 }

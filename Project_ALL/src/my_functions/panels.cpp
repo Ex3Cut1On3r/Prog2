@@ -5,7 +5,7 @@
 #include <limits>
 #include <fstream>
 #include <filesystem>
-#include <vector> // For std::to_string with some compilers, or if filesystem needs it indirectly
+#include <iomanip>
 
 using std::cout;
 using std::cin;
@@ -13,20 +13,55 @@ using std::endl;
 using std::string;
 using std::numeric_limits;
 using std::streamsize;
-using std::to_string; // Important for converting user.user_id to string for filename
+using std::to_string;
 using std::ifstream;
-// Removed using namespace std; to be more explicit
+using std::setw;
+using std::left;
+
+const string T_BORDER_TL = "┌";
+const string T_BORDER_TR = "┐";
+const string T_BORDER_BL = "└";
+const string T_BORDER_BR = "┘";
+const string T_BORDER_H  = "─";
+const string T_BORDER_V  = "│";
+const string T_BORDER_LJ = "├";
+const string T_BORDER_RJ = "┤";
+
+void printMenuItem(int number, const string& text, int width) {
+    cout << T_BORDER_V << " " << std::left << setw(3) << (to_string(number) + ".")
+         << setw(width - 6) << text << " " << T_BORDER_V << endl;
+}
 
 void adminPanel(client& admin, charity*& charities, int& charityCount) {
     int choice;
+    const int menu_width = 40;
+
     do {
-        cout << "\n--- Admin Panel (" << admin.first_name << " " << admin.last_name << ") ---\n";
-        cout << "1. Add a charity\n2. Modify a charity\n3. Remove a charity\n4. View all charities\n0. Logout\n";
+        string header = " Admin Panel (" + admin.first_name + " " + admin.last_name + ") ";
+        int header_padding_total = menu_width - header.length();
+        int header_pad_left = (header_padding_total > 0) ? header_padding_total / 2 : 0;
+        int header_pad_right = (header_padding_total > 0) ? header_padding_total - header_pad_left : 0;
+
+        cout << endl;
+        cout << T_BORDER_TL << string(menu_width, T_BORDER_H[0]) << T_BORDER_TR << endl;
+        cout << T_BORDER_V << string(header_pad_left, ' ') << header << string(header_pad_right, ' ') << T_BORDER_V << endl;
+        cout << T_BORDER_LJ << string(menu_width, T_BORDER_H[0]) << T_BORDER_RJ << endl;
+
+        printMenuItem(1, "Add a charity", menu_width);
+        printMenuItem(2, "Modify a charity", menu_width);
+        printMenuItem(3, "Remove a charity", menu_width);
+        printMenuItem(4, "View all charities", menu_width);
+        cout << T_BORDER_LJ << string(menu_width, T_BORDER_H[0]) << T_BORDER_RJ << endl;
+        printMenuItem(0, "Logout", menu_width);
+
+        cout << T_BORDER_BL << string(menu_width, T_BORDER_H[0]) << T_BORDER_BR << endl;
+
         cout << "Enter choice: ";
         while (!(cin >> choice)) {
             cout << "Invalid input. Please enter a number: ";
             cin.clear();
             cin.ignore(numeric_limits<streamsize>::max(), '\n');
+            cout << "Enter choice: ";
         }
         cin.ignore(numeric_limits<streamsize>::max(), '\n');
 
@@ -63,25 +98,50 @@ void adminPanel(client& admin, charity*& charities, int& charityCount) {
             default:
                 cout << "Invalid option. Try again.\n";
         }
+        if (choice != 0) {
+            cout << "\nPress Enter to continue...";
+            cin.get();
+        }
     } while (choice != 0);
 }
 
 void userPanel(client& user, charity*& charities, int& charityCount) {
     int choice;
     bool userDataHasChanged = false;
-    do {
-        cout << "\n--- User Panel (" << user.first_name << " " << user.last_name << ") ---\n";
-        cout << "Donations made: " << user.number_ofdonations << "\n";
-        cout << "1. Browse charities\n2. Make donation\n3. View my donations\n";
-        cout << "4. Cancel donation\n5. Modify donation\n";
-        cout << "6. Export My Donations to PDF\n"; // Changed wording slightly
-        cout << "0. Logout\n";
-        cout << "Enter choice: ";
+    const int menu_width = 45;
 
+    do {
+        string header = " User Panel (" + user.first_name + " " + user.last_name + ") ";
+        string donations_info = "Donations made: " + to_string(user.number_ofdonations);
+        int header_padding_total = menu_width - header.length();
+        int header_pad_left = (header_padding_total > 0) ? header_padding_total / 2 : 0;
+        int header_pad_right = (header_padding_total > 0) ? header_padding_total - header_pad_left : 0;
+        int donations_info_padding_total = menu_width - donations_info.length();
+        int donations_info_pad_left = (donations_info_padding_total > 0) ? donations_info_padding_total / 2 : 0;
+        int donations_info_pad_right = (donations_info_padding_total > 0) ? donations_info_padding_total - donations_info_pad_left : 0;
+
+        cout << endl;
+        cout << T_BORDER_TL << string(menu_width, T_BORDER_H[0]) << T_BORDER_TR << endl;
+        cout << T_BORDER_V << string(header_pad_left, ' ') << header << string(header_pad_right, ' ') << T_BORDER_V << endl;
+        cout << T_BORDER_V << string(donations_info_pad_left, ' ') << donations_info << string(donations_info_pad_right, ' ') << T_BORDER_V << endl;
+        cout << T_BORDER_LJ << string(menu_width, T_BORDER_H[0]) << T_BORDER_RJ << endl;
+
+        printMenuItem(1, "Browse charities", menu_width);
+        printMenuItem(2, "Make donation", menu_width);
+        printMenuItem(3, "View my donations", menu_width);
+        printMenuItem(4, "Cancel donation", menu_width);
+        printMenuItem(5, "Modify donation", menu_width);
+        printMenuItem(6, "Export My Donations to PDF", menu_width);
+        cout << T_BORDER_LJ << string(menu_width, T_BORDER_H[0]) << T_BORDER_RJ << endl;
+        printMenuItem(0, "Logout", menu_width);
+        cout << T_BORDER_BL << string(menu_width, T_BORDER_H[0]) << T_BORDER_BR << endl;
+
+        cout << "Enter choice: ";
         while (!(cin >> choice)) {
             cout << "Invalid input. Please enter a number: ";
             cin.clear();
             cin.ignore(numeric_limits<streamsize>::max(), '\n');
+            cout << "Enter choice: ";
         }
         cin.ignore(numeric_limits<streamsize>::max(), '\n');
 
@@ -138,7 +198,7 @@ void userPanel(client& user, charity*& charities, int& charityCount) {
                          }
                     }
                 } catch (const std::filesystem::filesystem_error& e) {
-                    cerr << "Error with output directory " << my_pdfs_dir_path << ": " << e.what() << endl;
+                    std::cerr << "Error with output directory " << my_pdfs_dir_path << ": " << e.what() << endl;
                     break;
                 }
                 string global_donations_json_path = project_root_path + "data/donations.json";
@@ -167,10 +227,10 @@ void userPanel(client& user, charity*& charities, int& charityCount) {
                     if (convert_html_to_pdf(html_output_path, pdf_output_path)) {
                         cout << "PDF report exported to: " << pdf_output_path << endl;
                     } else {
-                        cerr << "Error: PDF conversion failed." << endl;
+                        std::cerr << "Error: PDF conversion failed." << endl;
                     }
                 } else {
-                    cerr << "Error: Could not create intermediate HTML file: " << html_output_path << endl;
+                    std::cerr << "Error: Could not create intermediate HTML file: " << html_output_path << endl;
                 }
                 break;
             }
@@ -179,6 +239,10 @@ void userPanel(client& user, charity*& charities, int& charityCount) {
                 break;
             default:
                 cout << "Invalid option. Try again.\n";
+        }
+        if (choice != 0) {
+            cout << "\nPress Enter to continue...";
+            cin.get();
         }
     } while (choice != 0);
 

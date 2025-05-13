@@ -1,35 +1,35 @@
 [
     {
         "donations_list": [],
-        "email": "ce0033@gmail.com",
+        "email": "c@gmail.com",
         "first_name": "charles",
         "last_name": "haddad",
         "number_ofdonations": 0,
-        "password": "$2b$10$orHSR2TdhCWD6sHatvVAFeMFs9V9srved11KkdagDrnlGrS5vlnM6",
+        "password": "$2b$10$vT4HymdltOscmrOuKAZWquqCDxWGH0PnAI3NK4snUpLjKM/MOZQha",
         "phone": "81917159",
-        "role": "user",
+        "role": "admin",
         "user_id": 1
     },
     {
-        "donations_list": [],
-        "email": "ali@gmail.com",
+        "donations_list": [
+            {
+                "amount": 11.0,
+                "charity_id": 1,
+                "d": {
+                    "date": "2025-05-14",
+                    "time": "01:04:59"
+                },
+                "donation_id": "D_Cl1747173899_2_0",
+                "message": "hey!"
+            }
+        ],
+        "email": "charlie.alhaddad@gmail.com",
         "first_name": "charles",
-        "last_name": "ali",
-        "number_ofdonations": 0,
-        "password": "$2b$10$4GyuOe5NhOP7nMgf1QJT5O3g5Y76wTJH8KGDXyGjFITI4odFXArte",
+        "last_name": "haddad",
+        "number_ofdonations": 1,
+        "password": "$2b$10$ocJGjPzqthpeQscs6/hBgOwWrrH0uzcUz8ZN9zK7GYsqxrRuWCmbe",
         "phone": "81917159",
-        "role": "admin",
-        "user_id": 2
-    },
-    {
-        "donations_list": [],
-        "email": "georgesibrahim35@gfmail.com",
-        "first_name": "georges",
-        "last_name": "ibrahim",
-        "number_ofdonations": 0,
-        "password": "$2b$10$2fOgLopuJV9banQ5B0yyZOwE7yj/hHdWrAXTNXpi0fmeu5bPir/.K",
-        "phone": "8191781826",
         "role": "user",
-        "user_id": 3
+        "user_id": 2
     }
 ]

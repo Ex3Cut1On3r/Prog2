@@ -11,25 +11,17 @@
 #include <string>
 
 #ifdef _WIN32
-// Define these *before* including windows.h
 #define WIN32_LEAN_AND_MEAN
-// NOMINMAX might already be defined by C++ headers or CMake,
-// but defining it here again is generally safe if it's consistently done.
-// If you get "NOMINMAX redefined" warnings from other files,
-// consider defining it in CMakeLists.txt: add_compile_definitions(NOMINMAX)
-#ifndef NOMINMAX // Define only if not already defined
+#ifndef NOMINMAX
 #define NOMINMAX
 #endif
 #include <windows.h>
 #endif
-
 using namespace std;
 using json = nlohmann::json;
-
 const string PROJECT_ROOT_FOR_JSON_LOG_PATHS = "C:/Users/Charlie/Documents/ProgrammingTwoProject/Programming2_Project-main/Project_ALL/";
 const string JSON_LOG_OUTPUT_DIR_PATH = PROJECT_ROOT_FOR_JSON_LOG_PATHS + "output/";
 const string JSON_LOG_FILE_PATH = JSON_LOG_OUTPUT_DIR_PATH + "logs.json";
-
 #ifdef _WIN32
 const WORD JSON_LOG_CONSOLE_DEFAULT_COLOR = FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE;
 const WORD JSON_LOG_CONSOLE_INFO_COLOR = FOREGROUND_GREEN | FOREGROUND_BLUE;

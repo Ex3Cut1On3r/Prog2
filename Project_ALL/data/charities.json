@@ -1,10 +1,162 @@
 [
     {
         "charity_id": 1,
-        "current_amount": 19998.0,
-        "description": "ssnhshf",
-        "name": "cjarles",
+        "current_amount": 12511.5,
+        "description": "Helping underprivileged communities.",
+        "name": "Hope Foundation",
         "status": true,
-        "target_amount": 999999.0
+        "target_amount": 50000.0
+    },
+    {
+        "charity_id": 2,
+        "current_amount": 8300.0,
+        "description": "Supporting reforestation efforts.",
+        "name": "Green Earth",
+        "status": true,
+        "target_amount": 30000.0
+    },
+    {
+        "charity_id": 3,
+        "current_amount": 14700.0,
+        "description": "Funding education for low-income students.",
+        "name": "Future Scholars",
+        "status": true,
+        "target_amount": 75000.0
+    },
+    {
+        "charity_id": 4,
+        "current_amount": 6200.0,
+        "description": "Saving and rehabilitating stray animals.",
+        "name": "Animal Rescue League",
+        "status": true,
+        "target_amount": 25000.0
+    },
+    {
+        "charity_id": 5,
+        "current_amount": 19990.0,
+        "description": "Providing clean water in rural areas.",
+        "name": "Water For All",
+        "status": false,
+        "target_amount": 60000.0
+    },
+    {
+        "charity_id": 6,
+        "current_amount": 3000.0,
+        "description": "Mentorship for youth empowerment.",
+        "name": "Bright Future",
+        "status": true,
+        "target_amount": 20000.0
+    },
+    {
+        "charity_id": 7,
+        "current_amount": 15500.0,
+        "description": "Medical aid for the underinsured.",
+        "name": "Health First",
+        "status": true,
+        "target_amount": 100000.0
+    },
+    {
+        "charity_id": 8,
+        "current_amount": 8000.0,
+        "description": "Ocean cleanup and wildlife protection.",
+        "name": "Save the Seas",
+        "status": true,
+        "target_amount": 50000.0
+    },
+    {
+        "charity_id": 9,
+        "current_amount": 21000.0,
+        "description": "Food drives for the homeless.",
+        "name": "Feed the Hungry",
+        "status": true,
+        "target_amount": 75000.0
+    },
+    {
+        "charity_id": 10,
+        "current_amount": 12250.0,
+        "description": "Supporting women in business and education.",
+        "name": "Women Rise",
+        "status": true,
+        "target_amount": 45000.0
+    },
+    {
+        "charity_id": 11,
+        "current_amount": 9700.0,
+        "description": "Providing tech education in rural areas.",
+        "name": "Tech Access",
+        "status": true,
+        "target_amount": 40000.0
+    },
+    {
+        "charity_id": 12,
+        "current_amount": 11000.0,
+        "description": "Housing and support for veterans.",
+        "name": "Veterans United",
+        "status": false,
+        "target_amount": 55000.0
+    },
+    {
+        "charity_id": 13,
+        "current_amount": 3400.0,
+        "description": "Building libraries in remote communities.",
+        "name": "Books Beyond",
+        "status": true,
+        "target_amount": 15000.0
+    },
+    {
+        "charity_id": 14,
+        "current_amount": 7200.0,
+        "description": "Promoting sustainable agriculture.",
+        "name": "Eco Life",
+        "status": true,
+        "target_amount": 30000.0
+    },
+    {
+        "charity_id": 15,
+        "current_amount": 18500.0,
+        "description": "Funding surgeries for children with cleft lips.",
+        "name": "Smile Makers",
+        "status": true,
+        "target_amount": 70000.0
+    },
+    {
+        "charity_id": 16,
+        "current_amount": 16200.0,
+        "description": "Shelter for victims of domestic abuse.",
+        "name": "Safe Haven",
+        "status": true,
+        "target_amount": 80000.0
+    },
+    {
+        "charity_id": 17,
+        "current_amount": 2500.0,
+        "description": "Community engagement for elderly citizens.",
+        "name": "Senior Connect",
+        "status": false,
+        "target_amount": 10000.0
+    },
+    {
+        "charity_id": 18,
+        "current_amount": 9000.0,
+        "description": "Conservation for endangered species.",
+        "name": "Voices for Wildlife",
+        "status": true,
+        "target_amount": 35000.0
+    },
+    {
+        "charity_id": 19,
+        "current_amount": 21000.0,
+        "description": "Rapid response for natural disaster victims.",
+        "name": "Disaster Relief Now",
+        "status": true,
+        "target_amount": 120000.0
+    },
+    {
+        "charity_id": 20,
+        "current_amount": 1.0,
+        "description": "haddad",
+        "name": "charles",
+        "status": true,
+        "target_amount": 11.0
     }
 ]
